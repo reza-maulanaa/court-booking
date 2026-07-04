@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CLOSE_HOUR, MAX_DAYS_AHEAD, OPEN_HOUR, todayWIB } from "./constants";
 
 const emailSchema = z
   .string()
@@ -22,3 +23,34 @@ export const loginSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+
+export const createBookingSchema = z
+  .object({
+    fieldId: z.string().min(1),
+    bookingDate: z.iso.date(),
+    startHour: z
+      .number()
+      .int()
+      .min(OPEN_HOUR)
+      .max(CLOSE_HOUR - 1),
+    durationHours: z.number().int().min(1),
+  })
+  .refine((b) => b.startHour + b.durationHours <= CLOSE_HOUR, {
+    message: `Booking melewati jam tutup (${CLOSE_HOUR}: 00)`,
+    path: ["durationHours"],
+  })
+  .refine(
+    (b) => {
+      const today = todayWIB();
+      const max = new Date(`${b.bookingDate}T00:00:00`);
+      const limit = new Date(`${today}T00:00:00`);
+      limit.setDate(limit.getDate() + MAX_DAYS_AHEAD);
+      return b.bookingDate >= today && max <= limit;
+    },
+    {
+      message: `Tanggal harus hari ini s/d ${MAX_DAYS_AHEAD} hari ke depan`,
+      path: ["bookingDate"],
+    },
+  );
+
+export type CreateBookingInput = z.infer<typeof createBookingSchema>;

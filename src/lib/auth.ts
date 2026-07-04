@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
+import { cookies } from "next/headers";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
@@ -39,3 +40,8 @@ export const sessionCookieOptions = {
   maxAge: 60 * 60 * 24 * 7,
   path: "/",
 } as const;
+
+export async function getSession(): Promise<SessionPayload | null> {
+  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  return token ? verifyToken(token) : null;
+}
