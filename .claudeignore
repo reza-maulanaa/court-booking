@@ -1,6 +1,5 @@
 # Abaikan file environment
 .env
-.env.local
 
 # Abaikan folder node_modules dan hasil build
 node_modules/
