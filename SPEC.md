@@ -14,7 +14,7 @@ custom JWT (jose), Zod, Tailwind v4 + shadcn/ui, Vitest, deploy Vercel.
 
 ### Masuk MVP
 - Registrasi & login (email + password, custom JWT di cookie httpOnly).
-- Katalog lapangan: nama, tipe (indoor/outdoor), harga per jam.
+- Katalog lapangan: nama, harga per jam.
 - Availability per lapangan per tanggal: daftar jam kosong/terisi,
   dihitung on-the-fly (lihat ARCHITECTURE §3).
 - Form booking: pilih lapangan, tanggal, jam mulai, durasi (jam bulat).
@@ -55,7 +55,7 @@ Tiga tabel (skema Drizzle lengkap + migration SQL di ARCHITECTURE §7):
 | Tabel | Kolom |
 |---|---|
 | `users` | id (uuid text, PK), name, email (unique), password_hash, role (`user`\|`admin`) |
-| `fields` | id (PK), name, type (`indoor`\|`outdoor`), harga_per_jam (integer, rupiah) |
+| `fields` | id (PK), name, harga_per_jam (integer, rupiah) |
 | `bookings` | id (PK), user_id (FK→users), field_id (FK→fields), booking_date (date), start_hour (int), duration_hours (int), harga_snapshot (int, per jam), status (enum), created_at |
 
 Tidak ada tabel slot. Slot deterministik dari

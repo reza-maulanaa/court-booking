@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783138787523,
+      "tag": "0000_bitter_iron_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783138808335,
+      "tag": "0001_booking-constraints",
+      "breakpoints": true
+    }
+  ]
+}

@@ -133,7 +133,6 @@ Drizzle (`src/db/schema.ts` nanti — Fase 0 belum menulis kode):
 import { pgTable, pgEnum, text, integer, date, timestamp } from "drizzle-orm/pg-core";
 
 export const userRole = pgEnum("user_role", ["user", "admin"]);
-export const fieldType = pgEnum("field_type", ["indoor", "outdoor"]);
 export const bookingStatus = pgEnum("booking_status", [
   "pending", "confirmed", "completed", "cancelled",
 ]);
@@ -149,7 +148,6 @@ export const users = pgTable("users", {
 export const fields = pgTable("fields", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
-  type: fieldType("type").notNull(),
   hargaPerJam: integer("harga_per_jam").notNull(),
 });
 
