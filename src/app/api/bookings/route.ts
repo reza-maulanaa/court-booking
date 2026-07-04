@@ -1,0 +1,66 @@
+import { NextResponse } from "next/server";
+import { desc, eq } from "drizzle-orm";
+import { db } from "@/db";
+import { bookings, fields } from "@/db/schema";
+import { createBookingSchema } from "@/lib/validator";
+import { getSession } from "@/lib/auth";
+import { pgErrorCode } from "@/lib/pg-error";
+
+export async function POST(req: Request) {
+  const session = await getSession();
+  if (!session)
+    return NextResponse.json({ error: "Silakan login dulu" }, { status: 401 });
+
+  const body = await req.json().catch(() => null);
+  const parsed = createBookingSchema.safeParse(body);
+  if (!parsed.success)
+    return NextResponse.json(
+      { error: parsed.error.issues[0].message },
+      { status: 400 },
+    );
+
+  const { fieldId, bookingDate, startHour, durationHours } = parsed.data;
+
+  const field = await db.query.fields.findFirst({
+    where: eq(fields.id, fieldId),
+  });
+  if (!field)
+    return NextResponse.json(
+      { error: "Lapangan tidak ditemukan" },
+      { status: 404 },
+    );
+
+  try {
+    const [booking] = await db
+      .insert(bookings)
+      .values({
+        userId: session.sub,
+        fieldId,
+        bookingDate,
+        startHour,
+        durationHours,
+        hargaSnapshot: field.hargaPerJam,
+      })
+      .returning();
+    return NextResponse.json(booking, { status: 201 });
+  } catch (e) {
+    if (pgErrorCode(e) === "23P01")
+      return NextResponse.json(
+        { error: "Jam tersebut sudah dibooking, pilih jam lain" },
+        { status: 409 },
+      );
+    throw e;
+  }
+}
+
+export async function GET() {
+  const session = await getSession();
+  if (!session)
+    return NextResponse.json({ error: "Silahkan login dulu" }, { status: 401 });
+
+  const list = await db.query.bookings.findMany({
+    where: eq(bookings.userId, session.sub),
+    orderBy: [desc(bookings.bookingDate), desc(bookings.startHour)],
+  });
+  return NextResponse.json(list);
+}
