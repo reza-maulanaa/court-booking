@@ -37,7 +37,7 @@ export const createBookingSchema = z
     durationHours: z.number().int().min(1),
   })
   .refine((b) => b.startHour + b.durationHours <= CLOSE_HOUR, {
-    message: `Booking melewati jam tutup (${CLOSE_HOUR}: 00)`,
+    message: `Booking melewati jam tutup (${CLOSE_HOUR}:00)`,
     path: ["durationHours"],
   })
   .refine(

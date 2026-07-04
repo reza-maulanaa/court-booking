@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MAX_DAYS_AHEAD, todayWIB } from "@/lib/constants";
+import { DateChips } from "@/components/date-chips";
+import { todayWIB } from "@/lib/constants";
 
 type Slot = { hour: number; available: boolean };
 
@@ -23,21 +24,6 @@ const rupiah = new Intl.NumberFormat("id-ID", {
 });
 
 const jam = (h: number) => `${String(h).padStart(2, "0")}.00`;
-
-// hari ini s/d +MAX_DAYS_AHEAD, sinkron dengan validator backend
-function dateOptions() {
-  return Array.from({ length: MAX_DAYS_AHEAD + 1 }, (_, i) => {
-    const d = new Date(`${todayWIB()}T00:00:00`);
-    d.setDate(d.getDate() + i);
-    return {
-      iso: d.toLocaleDateString("en-CA"),
-      hari: i === 0 ? "Hari ini" : d.toLocaleDateString("id-ID", { weekday: "short" }),
-      tgl: d.getDate(),
-      bulan: d.toLocaleDateString("id-ID", { month: "short" }),
-      minggu: d.getDay() === 0,
-    };
-  });
-}
 
 export function BookingForm({
   fieldId,
@@ -121,40 +107,7 @@ export function BookingForm({
     <form onSubmit={handleSubmit} className="grid gap-6">
       <fieldset className="grid gap-2">
         <legend className="mb-2 text-base font-semibold">Tanggal</legend>
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {dateOptions().map((d) => {
-            const selected = date === d.iso;
-            return (
-              <button
-                key={d.iso}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setDate(d.iso)}
-                className={`flex min-w-20 shrink-0 flex-col items-center rounded-xl border px-3 py-2 text-sm transition-colors ${
-                  selected
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "bg-background hover:bg-accent"
-                }`}
-              >
-                <span
-                  className={
-                    selected
-                      ? ""
-                      : d.minggu
-                        ? "text-red-600"
-                        : "text-muted-foreground"
-                  }
-                >
-                  {d.hari}
-                </span>
-                <span className="text-2xl font-bold">{d.tgl}</span>
-                <span className={selected ? "" : "text-muted-foreground"}>
-                  {d.bulan}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <DateChips value={date} onChange={setDate} />
       </fieldset>
 
       <fieldset className="grid gap-2">

@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatusBadge, type BookingStatus } from "@/components/status-badge";
 
 type Booking = {
   id: string;
@@ -14,20 +14,10 @@ type Booking = {
   startHour: number;
   durationHours: number;
   hargaSnapshot: number;
-  status: "pending" | "confirmed" | "completed" | "cancelled";
+  status: BookingStatus;
 };
 
 type Field = { id: string; name: string };
-
-const STATUS_BADGE: Record<
-  Booking["status"],
-  { label: string; className: string }
-> = {
-  pending: { label: "Menunggu", className: "bg-yellow-100 text-yellow-800" },
-  confirmed: { label: "Dikonfirmasi", className: "bg-primary text-primary-foreground" },
-  completed: { label: "Selesai", className: "bg-muted text-muted-foreground" },
-  cancelled: { label: "Dibatalkan", className: "bg-red-100 text-red-700" },
-};
 
 const rupiah = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -102,7 +92,6 @@ export default function BookingsPage() {
       ) : (
         <div className="grid gap-3">
           {bookings.map((b) => {
-            const badge = STATUS_BADGE[b.status];
             return (
               <Card key={b.id}>
                 <CardContent className="flex flex-wrap items-center justify-between gap-3">
@@ -119,7 +108,7 @@ export default function BookingsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className={badge.className}>{badge.label}</Badge>
+                    <StatusBadge status={b.status} />
                     {b.status === "pending" && (
                       <Button
                         variant="outline"

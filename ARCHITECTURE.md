@@ -107,10 +107,18 @@ Enum: `pending`, `confirmed`, `completed`, `cancelled`.
 
 - `completed` dan `cancelled` = terminal, tidak ada transisi keluar.
 - Transisi lain (mis. `pending → completed`, `cancelled → confirmed`) invalid.
-- Implementasi: satu fungsi `canTransition(from, to, actor)` dengan tabel di
-  atas sebagai data; update status selalu
-  `UPDATE ... WHERE id = $1 AND status = $2(from)` — kalau 0 baris berubah,
-  status sudah berubah di tengah jalan (optimistic check, tanpa lock).
+- Implementasi (terealisasi F4, 2026-07-04 — revisi dari rencana
+  `canTransition(from, to, actor)`): tabel dibalik jadi peta
+  `ALLOWED_FROM: { target → [asal yang sah] }` di
+  `api/admin/bookings/[id]/route.ts` karena input request berupa status
+  TUJUAN; aktor dipisah per route (user pemilik: `pending → cancelled` di
+  `api/bookings/[id]`, admin: sisanya). Update selalu atomik:
+  `UPDATE ... WHERE id = $1 AND status IN (asal sah)` — kalau 0 baris
+  berubah, transisi tidak sah ATAU status keburu berubah di tengah jalan
+  (race user-cancel vs admin-confirm) → 409 menyebut transisinya.
+  `pending` tidak pernah jadi kunci `ALLOWED_FROM` = tidak ada jalan
+  kembali ke antrean; `completed`/`cancelled` tidak pernah jadi nilai
+  asal untuk keluar = terminal terjaga struktural.
 - **Alasan pakai enum + tabel transisi, bukan boolean/if bertebaran**:
   4 status tidak muat di boolean, dan transisi yang valid harus satu sumber
   kebenaran — bukan tersebar di tiap handler.
