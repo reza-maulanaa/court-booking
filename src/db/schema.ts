@@ -13,6 +13,7 @@ export const bookingStatus = pgEnum("booking_status", [
   "confirmed",
   "completed",
   "cancelled",
+  "expired",
 ]);
 
 export const users = pgTable("users", {
@@ -47,6 +48,7 @@ export const bookings = pgTable("bookings", {
   startHour: integer("start_hour").notNull(),
   durationHours: integer("duration_hours").notNull(),
   hargaSnapshot: integer("harga_snapshot").notNull(),
+  proofUrl: text("proof_url"),
   status: bookingStatus("status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

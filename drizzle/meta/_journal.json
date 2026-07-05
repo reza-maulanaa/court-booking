@@ -15,6 +15,20 @@
       "when": 1783138808335,
       "tag": "0001_booking-constraints",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783219907800,
+      "tag": "0002_proof-and-expired",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783219908661,
+      "tag": "0003_no-overlap-excludes-expired",
+      "breakpoints": true
     }
   ]
 }
