@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { and, desc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { db, expireStaleBookings } from "@/db";
 import { bookings, fields, users } from "@/db/schema";
 import { getSession } from "@/lib/auth";
 
@@ -17,6 +17,8 @@ export async function GET(req: Request) {
   if (date) conditions.push(eq(bookings.bookingDate, date));
   if (fieldId) conditions.push(eq(bookings.fieldId, fieldId));
 
+  await expireStaleBookings();
+
   const list = await db
     .select({
       id: bookings.id,
@@ -24,6 +26,7 @@ export async function GET(req: Request) {
       startHour: bookings.startHour,
       durationHours: bookings.durationHours,
       hargaSnapshot: bookings.hargaSnapshot,
+      proofUrl: bookings.proofUrl,
       status: bookings.status,
       createdAt: bookings.createdAt,
       userName: users.name,

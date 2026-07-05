@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { desc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { db, expireStaleBookings } from "@/db";
 import { bookings, fields } from "@/db/schema";
 import { createBookingSchema } from "@/lib/validator";
 import { getSession } from "@/lib/auth";
@@ -30,6 +30,10 @@ export async function POST(req: Request) {
       { status: 404 },
     );
 
+  // Pending basi masih "menduduki" EXCLUDE constraint — bereskan dulu,
+  // supaya slot yang tidak jadi dibayar bisa dibooking user lain.
+  await expireStaleBookings();
+
   try {
     const [booking] = await db
       .insert(bookings)
@@ -57,6 +61,9 @@ export async function GET() {
   const session = await getSession();
   if (!session)
     return NextResponse.json({ error: "Silahkan login dulu" }, { status: 401 });
+
+  // Supaya status yang tampil jujur — pending basi langsung terlihat expired.
+  await expireStaleBookings();
 
   const list = await db.query.bookings.findMany({
     where: eq(bookings.userId, session.sub),

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, notInArray } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "@/db";
+import { db, expireStaleBookings } from "@/db";
 import { bookings, fields } from "@/db/schema";
 import { OPEN_HOUR, CLOSE_HOUR } from "@/lib/constants";
 import { todayWIB, nowHourWIB } from "@/lib/constants";
@@ -31,12 +31,15 @@ export async function GET(
       { status: 404 },
     );
 
+  // Lepas slot yang pending-nya sudah basi sebelum menghitung ketersediaan.
+  await expireStaleBookings();
+
   const booked = await db.query.bookings.findMany({
     columns: { startHour: true, durationHours: true },
     where: and(
       eq(bookings.fieldId, id),
       eq(bookings.bookingDate, date),
-      ne(bookings.status, "cancelled"),
+      notInArray(bookings.status, ["cancelled", "expired"]),
     ),
   });
 

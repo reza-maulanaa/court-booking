@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CLOSE_HOUR, MAX_DAYS_AHEAD, OPEN_HOUR, todayWIB } from "./constants";
-import { nowHourWIB } from "./constants";
+import { nowHourWIB, MAX_PROOF_MB } from "./constants";
 
 const emailSchema = z
   .string()
@@ -58,3 +58,14 @@ export const createBookingSchema = z
     path: ["startHour"],
   });
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+
+// FormData tidak lewat Zod — validasi file manual, dipakai route proof.
+export function proofFileError(file: unknown): string | null {
+  if (!(file instanceof File) || file.size === 0)
+    return "File bukti transfer wajib diunggah";
+  if (!file.type.startsWith("image/"))
+    return "File harus berupa gambar (JPG/PNG)";
+  if (file.size > MAX_PROOF_MB * 1024 * 1024)
+    return `Ukuran maksimal ${MAX_PROOF_MB}MB — kirim screenshot saja`;
+  return null;
+}

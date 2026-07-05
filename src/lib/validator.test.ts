@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createBookingSchema } from "./validator";
+import { createBookingSchema, proofFileError } from "./validator";
 
 // jam palsu semua tes: 2026-07-10 14:30 WIB = 07:30 UTC
 const NOW = new Date("2026-07-10T07:30:00Z");
@@ -57,5 +57,29 @@ describe("createBookingSchema", () => {
       startHour: 15,
     });
     expect(r.success).toBe(true);
+  });
+});
+
+describe("proofFileError", () => {
+  const img = (bytes: number, type = "image/png") =>
+    new File([new Uint8Array(bytes)], "bukti.png", { type });
+
+  it("menerima gambar normal", () => {
+    expect(proofFileError(img(500_000))).toBeNull();
+  });
+
+  it("menolak tanpa file / bukan file / file kosong", () => {
+    expect(proofFileError(null)).toMatch(/wajib/);
+    expect(proofFileError("bukan-file")).toMatch(/wajib/);
+    expect(proofFileError(img(0))).toMatch(/wajib/);
+  });
+
+  it("menolak non-gambar", () => {
+    expect(proofFileError(img(100, "application/pdf"))).toMatch(/gambar/);
+  });
+
+  it("menolak di atas batas MB", () => {
+    expect(proofFileError(img(4 * 1024 * 1024 + 1))).toMatch(/maksimal/i);
+    expect(proofFileError(img(4 * 1024 * 1024))).toBeNull();
   });
 });
