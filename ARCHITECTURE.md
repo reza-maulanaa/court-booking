@@ -95,17 +95,22 @@ diselesaikan constraint ini.
 
 ## 5. State machine status booking (keputusan final #4)
 
-Enum: `pending`, `confirmed`, `completed`, `cancelled`.
+Enum: `pending`, `confirmed`, `completed`, `cancelled`, `expired`
+(`expired` ditambah di F6, revisi 2026-07-05).
 
 | Dari | Ke | Trigger | Siapa |
 |---|---|---|---|
-| pending | confirmed | approve (pembayaran manual diterima) | admin |
+| pending | confirmed | approve (bukti transfer cocok dgn mutasi) | admin |
 | pending | cancelled | reject | admin |
 | pending | cancelled | batalkan sendiri | user pemilik |
+| pending | expired | 30 menit tanpa bukti transfer (lazy, §9) | sistem |
 | confirmed | completed | sesi selesai dimainkan | admin |
 | confirmed | cancelled | pembatalan setelah konfirmasi | admin |
 
-- `completed` dan `cancelled` = terminal, tidak ada transisi keluar.
+- `completed`, `cancelled`, `expired` = terminal, tidak ada transisi keluar.
+  Booking yang hangus tidak dihidupkan lagi — user booking ulang.
+  `expired` sengaja dibedakan dari `cancelled`: beda kejadian beda nama
+  (admin bisa lihat pola "sering booking tapi tak pernah bayar").
 - Transisi lain (mis. `pending → completed`, `cancelled → confirmed`) invalid.
 - Implementasi (terealisasi F4, 2026-07-04 — revisi dari rencana
   `canTransition(from, to, actor)`): tabel dibalik jadi peta
@@ -205,12 +210,76 @@ operasional berubah, dua tempat itu satu-satunya yang disentuh.
 
 Dua lapisan pertama boleh gagal mendeteksi (race, bug) — lapisan ketiga tidak.
 
-## 9. Email (Resend)
+## 9. Pembayaran manual & bukti transfer (revisi final 2026-07-05)
 
-Dikirim **setelah** transaksi DB sukses, fire-and-forget dengan catch + log.
-**Alasan**: email gagal ≠ booking gagal; booking adalah source of truth,
-email hanya notifikasi. Tanpa queue/retry di MVP — kalau butuh reliabilitas
-email, tambah nanti.
+Menggantikan rencana email (Resend → Brevo → dihapus). **Alasan**: email
+konfirmasi tidak menyelesaikan masalah inti (booking tak berbayar menahan
+slot); bukti transfer menyelesaikannya sekaligus menghapus dependensi
+email service beserta dilema kepemilikan akunnya. Status dilihat user di
+halaman "booking saya" — email jadi murni nice-to-have, di luar MVP.
+
+### Alur
+
+1. Booking dibuat → `pending`, slot langsung ke-hold (melindungi user
+   jujur yang sedang buka m-banking; penyerang iseng dibatasi 30 menit).
+2. User bayar manual — QRIS (gambar statis `public/qris.svg`) atau
+   transfer bank — lalu upload bukti (gambar) → `proof_url` terisi,
+   tetap `pending`, tidak bisa hangus lagi. Metode bayar TIDAK disimpan:
+   buktinya satu jenis, admin memverifikasi ke mutasi/dashboard QRIS
+   apa pun metodenya — kolom `payment_method` = state tanpa keputusan.
+3. Admin cocokkan bukti dengan mutasi rekening → confirm / reject (§5).
+4. Tanpa upload dalam 30 menit → `expired`, slot terlepas.
+
+### Kadaluarsa lazy — tanpa cron (keputusan final #5)
+
+`expired` dievaluasi **saat data disentuh**, bukan oleh scheduler:
+satu UPDATE (`pending` + `proof_url IS NULL` + `created_at` lewat
+deadline → `expired`) di `expireStaleBookings()` (`src/db/index.ts`),
+dipanggil di jalur availability, buat booking, list booking, list admin.
+
+- **Kenapa bukan cron**: infra baru di serverless, presisi menit-an,
+  dan race cron-vs-user. Query yang dievaluasi saat dibutuhkan selalu
+  tepat waktu — pola sama dengan availability §3 ("derive, jangan simpan").
+- **Kenapa UPDATE fisik (bukan filter murni di query)**: EXCLUDE
+  constraint §4 menilai baris berdasarkan status tersimpan — pending basi
+  harus benar-benar diubah agar tidak memblokir insert user lain. Karena
+  itu sweep wajib di jalur tulis; di jalur baca ikut dipanggil supaya
+  status yang tampil jujur.
+- Perbandingan waktu sepenuhnya di SQL (`now() - interval`) — tidak ada
+  jam aplikasi vs jam DB.
+- Konsekuensi migrasi: `WHERE` EXCLUDE jadi
+  `status NOT IN ('cancelled','expired')`; nilai enum baru tidak boleh
+  dipakai di transaksi yang sama dengan pembuatannya → dua file migration
+  (0002 enum+kolom, 0003 constraint).
+
+### Penyimpanan bukti (Vercel Blob)
+
+File tidak bisa ke filesystem (serverless, hilang) atau ke Neon (DB
+gendut). **Vercel Blob** dipilih karena nol akun baru — token nempel di
+project Vercel yang sama. DB hanya menyimpan URL.
+
+- Batas **4MB** + wajib `image/*`, divalidasi **di server**
+  (`proofFileError`, `lib/validator.ts`) — batas Vercel ~4.5MB/request,
+  jadi limit aplikasi harus di bawahnya; UI menyarankan screenshot.
+  Upgrade path kalau kurang: client upload `@vercel/blob/client`.
+- Store **private** (revisi saat deploy: semula rencana public +
+  URL acak): bukti transfer = data finansial, jadi akses lewat
+  `GET /api/bookings/[id]/proof` yang mengecek pemilik/admin lalu
+  meng-alirkan gambar (`get()` SDK) — otorisasi beneran, bukan URL
+  rahasia. Streaming via function cukup untuk ≤4MB; upgrade path kalau
+  butuh CDN: `presignUrl`.
+- `addRandomSuffix: true` dipertahankan — re-upload jadi path baru
+  tanpa perlu `allowOverwrite`.
+- Re-upload saat masih `pending` diizinkan (salah kirim gambar tidak
+  mematikan booking); blob lama dibiarkan yatim — volumenya kecil.
+- Urutan di route proof: validasi → sweep expired → cek kepemilikan+status
+  → upload blob → UPDATE berkondisi status. Kalau UPDATE 0 baris (status
+  keburu berubah), blob dihapus lagi — tidak ada bukti nyangkut di booking
+  yang sudah ditolak.
+
+Env: `BLOB_READ_WRITE_TOKEN` (dibuat otomatis saat create Blob store di
+dashboard Vercel). Rekening tujuan: konstanta `TRANSFER_INFO`
+(`lib/constants.ts`) — pindah ke DB kalau kelak admin perlu ganti via UI.
 
 ## 10. Testing (Vitest)
 
@@ -220,5 +289,6 @@ Prioritas test = tempat logika bisa salah:
 3. Integration: dua insert overlap paralel ke DB test → tepat satu sukses,
    satu tertangkap sebagai `23P01`.
 4. Zod schemas (batas jam, durasi, tanggal).
+5. `proofFileError` (tipe file, batas ukuran, file kosong).
 
 Tidak menguji framework (routing Next, Drizzle sendiri).

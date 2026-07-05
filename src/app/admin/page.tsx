@@ -28,6 +28,7 @@ type AdminBooking = {
   startHour: number;
   durationHours: number;
   hargaSnapshot: number;
+  proofUrl: string | null;
   status: BookingStatus;
   userName: string;
   userEmail: string;
@@ -148,6 +149,7 @@ export default function AdminPage() {
                 <TableHead>Lapangan</TableHead>
                 <TableHead>Pemesan</TableHead>
                 <TableHead>Harga</TableHead>
+                <TableHead>Bukti</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Aksi</TableHead>
               </TableRow>
@@ -168,6 +170,20 @@ export default function AdminPage() {
                   </TableCell>
                   <TableCell>
                     {rupiah.format(b.hargaSnapshot * b.durationHours)}
+                  </TableCell>
+                  <TableCell>
+                    {b.proofUrl ? (
+                      <a
+                        href={`/api/bookings/${b.id}/proof`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary underline"
+                      >
+                        Lihat
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={b.status} />

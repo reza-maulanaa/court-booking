@@ -99,7 +99,9 @@ export function BookingForm({
       return;
     }
 
-    toast.success("Booking berhasil dibuat! Menunggu konfirmasi admin.");
+    toast.success(
+      "Booking dibuat! Transfer & upload bukti dalam 30 menit ya.",
+    );
     router.push("/bookings");
   }
 
