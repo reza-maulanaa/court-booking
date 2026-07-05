@@ -217,12 +217,12 @@ export default function BookingsPage() {
                             itu booking hangus otomatis.
                           </div>
                           <div className="flex flex-wrap items-center gap-4">
-                            {/* eslint-disable-next-line @next/next/no-img-element -- SVG statis kecil, tak perlu optimasi next/image */}
+                            {/* eslint-disable-next-line @next/next/no-img-element -- aset statis satu-satunya, tak perlu optimasi next/image */}
                             <img
-                              src="/qris.svg"
+                              src="/qris.jpeg"
                               alt="QRIS — scan untuk bayar"
                               width={112}
-                              height={112}
+                              height={158}
                               className="rounded-md border"
                             />
                             <div className="grid gap-1">

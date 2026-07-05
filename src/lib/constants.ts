@@ -9,9 +9,9 @@ export const PROOF_DEADLINE_MIN = 30;
 export const MAX_PROOF_MB = 4;
 // ponytail: rekening hardcoded — pindah ke DB kalau admin butuh ganti via UI
 export const TRANSFER_INFO = {
-  bank: "BCA",
-  norek: "1234567890",
-  atasNama: "Futsal Kita",
+  bank: "SEABANK",
+  norek: "901397238897",
+  atasNama: "Reza Maulana",
 };
 
 export function todayWIB(): string {
