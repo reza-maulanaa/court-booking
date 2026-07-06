@@ -28,14 +28,6 @@ export function HeroVideo() {
     const wrapper = video.closest<HTMLElement>("[data-hero]");
     if (!wrapper) return;
 
-    // iOS Safari kadang tidak me-render frame hasil seek sebelum video
-    // pernah "diaktifkan" — play+pause sekali menyalakan pipeline decode.
-    const prime = () => {
-      video.play().then(() => video.pause()).catch(() => {});
-    };
-    if (video.readyState >= 1) prime();
-    else video.addEventListener("loadedmetadata", prime, { once: true });
-
     let target = 0;
     let current = 0;
     let raf = 0;
@@ -46,17 +38,34 @@ export function HeroVideo() {
       const progress =
         scrollable > 0 ? Math.min(Math.max(-rect.top / scrollable, 0), 1) : 0;
       target = progress * (video.duration || 0);
+      // Di tepi hero (masuk/keluar) kehalusan tidak terlihat — snap saja.
+      // Tanpa ini lerp masih nge-seek 60x/detik ±1 detik setelah sticky
+      // lepas, tepat saat konten bawah mulai bergerak → scroll tersendat.
+      if (progress === 0 || progress === 1) current = target;
     };
 
     // currentTime dikejar bertahap (lerp), bukan di-set langsung —
     // scroll wheel melompat-lompat, lerp yang bikin gerakannya halus.
     const tick = () => {
       current += (target - current) * 0.15;
-      if (Math.abs(target - current) > 0.01 && !video.seeking) {
+      if (Math.abs(target - current) <= 0.02) current = target;
+      // Bandingkan dengan posisi video sungguhan, bukan diff lerp —
+      // supaya frame terakhir tetap di-seek sekali setelah snap, lalu diam.
+      if (Math.abs(current - video.currentTime) > 0.02 && !video.seeking) {
         video.currentTime = current;
       }
       raf = requestAnimationFrame(tick);
     };
+
+    // iOS Safari kadang tidak me-render frame hasil seek sebelum video
+    // pernah "diaktifkan" — play+pause sekali menyalakan pipeline decode.
+    // onScroll diulang di sini karena duration baru terisi setelah metadata.
+    const prime = () => {
+      video.play().then(() => video.pause()).catch(() => {});
+      onScroll();
+    };
+    if (video.readyState >= 1) prime();
+    else video.addEventListener("loadedmetadata", prime, { once: true });
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
