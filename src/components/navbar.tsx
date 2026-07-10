@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Goal } from "lucide-react";
+import { Goal, Shield, CalendarCheck } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -21,7 +21,7 @@ export async function Navbar() {
       <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-2 px-4">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 text-xl font-extrabold tracking-tight text-primary md:text-2xl"
+          className="flex shrink-0 items-center gap-2 text-lg font-extrabold tracking-tight text-primary sm:text-xl md:text-2xl"
         >
           <Goal className="size-7" aria-hidden />
           Booking Futsal
@@ -32,11 +32,17 @@ export async function Navbar() {
             <>
               {session.role === "admin" && (
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/admin">Admin</Link>
+                  <Link href="/admin" className="gap-1.5">
+                    <Shield className="size-4" aria-hidden />
+                    <span className="hidden sm:inline">Admin</span>
+                  </Link>
                 </Button>
               )}
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/bookings">Booking Saya</Link>
+                <Link href="/bookings" className="gap-1.5">
+                  <CalendarCheck className="size-4" aria-hidden />
+                  <span className="hidden sm:inline">Booking Saya</span>
+                </Link>
               </Button>
               <span className="hidden max-w-32 truncate text-sm text-muted-foreground sm:inline">
                 {user?.name}

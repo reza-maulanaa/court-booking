@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -15,8 +16,9 @@ export function LogoutButton() {
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleLogout}>
-      Keluar
+    <Button variant="outline" size="sm" className="gap-1.5" onClick={handleLogout}>
+      <LogOut className="size-4" aria-hidden />
+      <span className="hidden sm:inline">Keluar</span>
     </Button>
   );
 }
