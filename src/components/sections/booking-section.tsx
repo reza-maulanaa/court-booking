@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { SectionHeading } from "./section-heading";
@@ -119,6 +119,12 @@ export function BookingSection({
   // otomatis dimuat ulang saat lapangan/tanggal berganti.
   const [slotsVersion, setSlotsVersion] = useState(0);
 
+  // Tinggi tiap langkah beda jauh (step 1 penuh grid jam, step 2 cuma form
+  // pendek) — tanpa ini, scrollY yang sama membuat viewport "kelempar" ke
+  // konten section berikutnya begitu step berganti jadi lebih pendek.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const skipScrollRef = useRef(true);
+
   const field = fields[fieldIdx];
   const fieldId = field?.id;
 
@@ -162,6 +168,22 @@ export function BookingSection({
     window.addEventListener(PICK_FIELD_EVENT, onPick);
     return () => window.removeEventListener(PICK_FIELD_EVENT, onPick);
   }, [fields]);
+
+  useEffect(() => {
+    if (skipScrollRef.current) {
+      // Lewati saat mount pertama — jangan auto-scroll ke #booking saat
+      // halaman baru dibuka.
+      skipScrollRef.current = false;
+      return;
+    }
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    cardRef.current?.scrollIntoView({
+      behavior: prefersReduced ? "auto" : "smooth",
+      block: "start",
+    });
+  }, [step, done]);
 
   const selHours = [...selected].sort((a, b) => a - b);
   const nSel = selHours.length;
@@ -321,7 +343,10 @@ export function BookingSection({
         })}
       </div>
 
-      <div className="rounded-2xl border border-tf-ink/10 bg-white p-5 shadow-[0_2px_10px_rgba(18,36,26,.05)] md:p-8">
+      <div
+        ref={cardRef}
+        className="scroll-mt-20 rounded-2xl border border-tf-ink/10 bg-white p-5 shadow-[0_2px_10px_rgba(18,36,26,.05)] md:p-8"
+      >
         {step === 1 && (
           <>
             <div className="mb-3 text-[15px] font-bold text-tf-ink">
