@@ -1,0 +1,1 @@
+gunakan supabase hanya untuk storage, tidak lebih
