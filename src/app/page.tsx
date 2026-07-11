@@ -90,7 +90,11 @@ export default async function Home() {
     <div
       className={`${barlow.variable} ${barlowCondensed.variable} font-barlow bg-white text-tf-ink`}
     >
-      <LandingNav />
+      <LandingNav
+        isLoggedIn={session !== null}
+        isAdmin={session?.role === "admin"}
+        userName={user?.name ?? ""}
+      />
       <LandingHero />
       <BookingSection
         fields={fieldProps}
