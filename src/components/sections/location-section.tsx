@@ -15,7 +15,7 @@ const INFO = [
           href={MAPS_LINK}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-semibold text-tf-green hover:text-tf-green-deep"
+          className="font-semibold text-tf-green transition-all duration-200 hover:scale-105 hover:text-tf-green-deep active:scale-95"
         >
           Buka di Google Maps ↗
         </a>
@@ -63,7 +63,7 @@ export function LocationSection() {
             </div>
             <a
               href="#booking"
-              className="inline-block rounded-lg bg-tf-green px-[18px] py-2.5 text-[13px] font-bold text-white hover:bg-tf-green-deep"
+              className="inline-block rounded-lg bg-tf-green px-[18px] py-2.5 text-[13px] font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-tf-green-deep hover:shadow-lg hover:shadow-tf-green/30 active:translate-y-0 active:scale-95"
             >
               Booking via Website
             </a>

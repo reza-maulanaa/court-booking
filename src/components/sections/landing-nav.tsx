@@ -28,18 +28,21 @@ export function LandingNav({
 
   return (
     <div className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b border-tf-ink/10 bg-white px-4 py-4 md:px-14">
-      <a href="#" className="flex shrink-0 items-center">
-        <span className="font-barlow-condensed text-lg font-extrabold whitespace-nowrap uppercase tracking-[0.5px] text-tf-ink sm:text-[22px]">
+      <a
+        href="#"
+        className="flex shrink-0 items-center transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+      >
+        <span className="font-barlow-condensed text-xl font-extrabold whitespace-nowrap uppercase tracking-[0.5px] text-tf-ink sm:text-2xl sm:tracking-wide lg:text-[28px]">
           Booking <span className="text-tf-green">Futsal</span>
         </span>
       </a>
 
-      <div className="hidden gap-7 text-sm font-semibold md:flex">
+      <div className="hidden gap-5 text-sm font-bold md:flex lg:gap-7 lg:text-base">
         {LINKS.map((l) => (
           <a
             key={l.href}
             href={l.href}
-            className="text-tf-ink hover:text-tf-green"
+            className="text-tf-ink transition-all duration-200 hover:scale-105 hover:text-tf-green active:scale-95"
           >
             {l.label}
           </a>
@@ -47,32 +50,35 @@ export function LandingNav({
       </div>
 
       <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-        <div className="hidden items-center gap-4 text-sm font-semibold md:flex">
+        <div className="hidden items-center gap-3 text-sm font-bold md:flex lg:gap-4 lg:text-base">
           {isLoggedIn ? (
             <>
               <Link
                 href="/bookings"
-                className="text-tf-ink hover:text-tf-green"
+                className="text-tf-ink transition-all duration-200 hover:scale-105 hover:text-tf-green active:scale-95"
               >
                 Booking Saya
               </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
-                  className="text-tf-ink hover:text-tf-green"
+                  className="text-tf-ink transition-all duration-200 hover:scale-105 hover:text-tf-green active:scale-95"
                 >
                   Admin
                 </Link>
               )}
               {userName && (
-                <span className="hidden max-w-28 truncate text-tf-muted lg:inline">
+                <span className="hidden max-w-28 truncate text-sm font-semibold text-tf-muted lg:inline">
                   {userName}
                 </span>
               )}
               <LandingLogoutLink />
             </>
           ) : (
-            <Link href="/login" className="text-tf-ink hover:text-tf-green">
+            <Link
+              href="/login"
+              className="text-tf-ink transition-all duration-200 hover:scale-105 hover:text-tf-green active:scale-95"
+            >
               Masuk
             </Link>
           )}
@@ -82,14 +88,14 @@ export function LandingNav({
           href={mobileHref}
           aria-label={mobileLabel}
           title={mobileLabel}
-          className="grid size-9 shrink-0 place-items-center rounded-lg border border-tf-ink/15 text-tf-ink hover:border-tf-green hover:text-tf-green md:hidden"
+          className="grid size-9 shrink-0 place-items-center rounded-lg border border-tf-ink/15 text-tf-ink transition-all duration-200 hover:scale-110 hover:border-tf-green hover:text-tf-green active:scale-90 md:hidden"
         >
           <MobileIcon className="size-4" aria-hidden />
         </Link>
 
         <a
           href="#booking"
-          className="shrink-0 rounded-lg bg-tf-green px-4 py-2.5 text-[13px] font-bold whitespace-nowrap text-white hover:bg-tf-green-deep sm:px-[22px] sm:py-[11px] sm:text-sm"
+          className="shrink-0 rounded-lg bg-tf-green px-4 py-2.5 text-[13px] font-bold whitespace-nowrap text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-tf-green-deep hover:shadow-lg hover:shadow-tf-green/30 active:translate-y-0 active:scale-95 sm:px-[22px] sm:py-[11px] sm:text-sm"
         >
           Booking Sekarang
         </a>

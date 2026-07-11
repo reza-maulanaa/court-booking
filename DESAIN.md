@@ -151,6 +151,20 @@ Halaman lain tetap §2 (shadcn + Geist + navbar/footer lama).
   sengaja dibiarkan placeholder.
 - Prototipe didesain desktop 1280px; breakpoint mobile ditambahkan wajar
   (grid kolaps, nav link tengah disembunyikan <768px) — prinsip §1 tetap.
+- **Rebrand "Tanjung Futsal" → "Booking Futsal"** (2026-07-11): semua teks
+  tampil (nav, footer, page title, alt foto, judul galeri) dan prefix kode
+  booking (`TF-` → `BF-`). Alamat & embed peta di section Lokasi diganti
+  lokasi asli (Google Maps embed `pb=` tanpa API key) menggantikan alamat
+  fiktif prototipe — masih level kecamatan, tinggal diperbarui kalau ada
+  alamat jalan persis.
+- **Font header/footer dipertegas + micro-interaction tombol** (2026-07-11):
+  logo nav/footer naik ke `text-2xl`+, link nav/footer naik dari
+  `font-medium`/`font-semibold` ke `font-bold`. Semua tombol & link landing
+  (CTA, kartu pilihan, slot jam, FAQ, dst) dapat `transition` + hover
+  (lift/scale + shadow untuk CTA solid) + `active:scale` (feedback tekan).
+  Ini sejalan dengan batas §2b yang dari awal mengizinkan "micro-interaction
+  kecil (hover card, transisi badge)" — bukan pengecualian baru. Slot jam
+  yang disabled (terisi) sengaja tidak dapat animasi (bukan interaktif).
 
 ## 3. Peta halaman
 

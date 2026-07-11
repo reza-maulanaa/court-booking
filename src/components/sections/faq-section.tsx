@@ -44,12 +44,12 @@ export function FaqSection() {
                 type="button"
                 aria-expanded={isOpen}
                 onClick={() => setOpen(isOpen ? -1 : i)}
-                className="flex w-full cursor-pointer items-center justify-between gap-4 px-[22px] py-[18px] text-left"
+                className="flex w-full cursor-pointer items-center justify-between gap-4 px-[22px] py-[18px] text-left transition-colors duration-200 hover:bg-tf-mist active:scale-[0.99]"
               >
                 <span className="text-base font-bold text-tf-ink">{f.q}</span>
                 <span
                   aria-hidden
-                  className="font-barlow-condensed text-[22px] font-extrabold text-tf-green"
+                  className={`font-barlow-condensed text-[22px] font-extrabold text-tf-green transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
                 >
                   {isOpen ? "−" : "+"}
                 </span>

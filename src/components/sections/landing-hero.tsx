@@ -8,7 +8,7 @@ const STATS = [
 
 export function LandingHero() {
   return (
-    <div className="relative flex min-h-[88svh] items-center overflow-hidden bg-tf-forest md:min-h-svh">
+    <div className="relative flex min-h-[88svh] items-center overflow-hidden bg-tf-forest md:min-h-0">
       <Image
         src="/court.jpg"
         alt="Lapangan Booking Futsal"
@@ -36,13 +36,13 @@ export function LandingHero() {
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <a
             href="#booking"
-            className="rounded-[10px] bg-tf-lime px-[30px] py-[15px] text-center text-base font-bold text-tf-ink hover:bg-tf-lime-bright"
+            className="rounded-[10px] bg-tf-lime px-[30px] py-[15px] text-center text-base font-bold text-tf-ink transition-all duration-200 hover:-translate-y-0.5 hover:bg-tf-lime-bright hover:shadow-lg hover:shadow-tf-lime/30 active:translate-y-0 active:scale-95"
           >
             Booking Sekarang
           </a>
           <a
             href="#lapangan"
-            className="rounded-[10px] border-[1.5px] border-white/33 px-[26px] py-3.5 text-center text-base font-semibold text-white hover:border-white"
+            className="rounded-[10px] border-[1.5px] border-white/33 px-[26px] py-3.5 text-center text-base font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:border-white hover:bg-white/10 active:translate-y-0 active:scale-95"
           >
             Lihat Lapangan &amp; Harga
           </a>

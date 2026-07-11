@@ -18,7 +18,7 @@ export function LandingLogoutLink() {
     <button
       type="button"
       onClick={handleLogout}
-      className="flex cursor-pointer items-center gap-1.5 text-tf-muted hover:text-tf-ink"
+      className="flex cursor-pointer items-center gap-1.5 text-base font-bold text-tf-muted transition-all duration-200 hover:scale-105 hover:text-tf-ink active:scale-95"
     >
       <LogOut className="size-3.5" aria-hidden />
       Keluar

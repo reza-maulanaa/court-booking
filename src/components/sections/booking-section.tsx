@@ -63,7 +63,7 @@ export function BookFieldButton({
           new CustomEvent(PICK_FIELD_EVENT, { detail: fieldId }),
         )
       }
-      className="inline-block rounded-[9px] bg-tf-green px-[22px] py-3 text-sm font-bold text-white hover:bg-tf-green-deep"
+      className="inline-block rounded-[9px] bg-tf-green px-[22px] py-3 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-tf-green-deep hover:shadow-lg hover:shadow-tf-green/30 active:translate-y-0 active:scale-95"
     >
       {children}
     </a>
@@ -363,7 +363,7 @@ export function BookingSection({
                     setSelected(new Set());
                     if (i !== fieldIdx) setSlots(null);
                   }}
-                  className={`flex flex-1 cursor-pointer items-center justify-between rounded-xl border-2 px-[18px] py-4 text-left ${
+                  className={`flex flex-1 cursor-pointer items-center justify-between rounded-xl border-2 px-[18px] py-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] ${
                     i === fieldIdx
                       ? "border-tf-green bg-tf-pale"
                       : "border-tf-ink/18 bg-white"
@@ -400,7 +400,7 @@ export function BookingSection({
                       setSelected(new Set());
                       if (i !== dateIdx) setSlots(null);
                     }}
-                    className={`cursor-pointer rounded-[10px] border-2 py-2.5 text-center ${
+                    className={`cursor-pointer rounded-[10px] border-2 py-2.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 ${
                       active
                         ? "border-tf-green bg-tf-pale"
                         : "border-tf-ink/18 bg-white"
@@ -457,11 +457,11 @@ export function BookingSection({
                       disabled={!s.available}
                       aria-pressed={sel}
                       onClick={() => toggleHour(s.hour)}
-                      className={`rounded-[10px] border-2 py-[13px] text-center text-[15px] font-bold ${
+                      className={`rounded-[10px] border-2 py-[13px] text-center text-[15px] font-bold transition-all duration-150 ${
                         sel
-                          ? "cursor-pointer border-tf-green bg-tf-green text-white"
+                          ? "cursor-pointer border-tf-green bg-tf-green text-white hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95"
                           : s.available
-                            ? "cursor-pointer border-tf-ink/18 bg-white text-tf-ink"
+                            ? "cursor-pointer border-tf-ink/18 bg-white text-tf-ink hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95"
                             : "cursor-not-allowed border-tf-fog bg-tf-fog text-tf-slot-muted line-through"
                       }`}
                     >
@@ -487,9 +487,9 @@ export function BookingSection({
                 type="button"
                 disabled={!canNext1}
                 onClick={() => setStep(2)}
-                className={`rounded-[10px] px-7 py-3.5 text-[15px] font-bold text-white ${
+                className={`rounded-[10px] px-7 py-3.5 text-[15px] font-bold text-white transition-all duration-200 ${
                   canNext1
-                    ? "cursor-pointer bg-tf-green hover:bg-tf-green-deep"
+                    ? "cursor-pointer bg-tf-green hover:-translate-y-0.5 hover:bg-tf-green-deep hover:shadow-lg hover:shadow-tf-green/30 active:translate-y-0 active:scale-95"
                     : "cursor-not-allowed bg-tf-disabled"
                 }`}
               >
@@ -555,7 +555,7 @@ export function BookingSection({
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="cursor-pointer rounded-[10px] border-[1.5px] border-tf-ink/20 px-6 py-3.5 text-[15px] font-semibold text-tf-ink"
+                className="cursor-pointer rounded-[10px] border-[1.5px] border-tf-ink/20 px-6 py-3.5 text-[15px] font-semibold text-tf-ink transition-all duration-200 hover:-translate-y-0.5 hover:border-tf-green hover:text-tf-green active:translate-y-0 active:scale-95"
               >
                 ← Kembali
               </button>
@@ -563,9 +563,9 @@ export function BookingSection({
                 type="button"
                 disabled={!canNext2}
                 onClick={() => setStep(3)}
-                className={`rounded-[10px] px-7 py-3.5 text-[15px] font-bold text-white ${
+                className={`rounded-[10px] px-7 py-3.5 text-[15px] font-bold text-white transition-all duration-200 ${
                   canNext2
-                    ? "cursor-pointer bg-tf-green hover:bg-tf-green-deep"
+                    ? "cursor-pointer bg-tf-green hover:-translate-y-0.5 hover:bg-tf-green-deep hover:shadow-lg hover:shadow-tf-green/30 active:translate-y-0 active:scale-95"
                     : "cursor-not-allowed bg-tf-disabled"
                 }`}
               >
@@ -621,7 +621,7 @@ export function BookingSection({
                       type="button"
                       aria-pressed={active}
                       onClick={() => setPay(p.id)}
-                      className={`flex cursor-pointer items-center gap-3 rounded-[11px] border-2 px-4 py-[13px] text-left ${
+                      className={`flex cursor-pointer items-center gap-3 rounded-[11px] border-2 px-4 py-[13px] text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] ${
                         active
                           ? "border-tf-green bg-tf-pale"
                           : "border-tf-ink/18 bg-white"
@@ -654,14 +654,14 @@ export function BookingSection({
                 type="button"
                 disabled={submitting}
                 onClick={confirmBooking}
-                className="w-full cursor-pointer rounded-[10px] bg-tf-green py-[15px] text-center text-base font-bold text-white hover:bg-tf-green-deep disabled:cursor-not-allowed disabled:bg-tf-disabled"
+                className="w-full cursor-pointer rounded-[10px] bg-tf-green py-[15px] text-center text-base font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-tf-green-deep hover:shadow-lg hover:shadow-tf-green/30 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-tf-disabled disabled:hover:translate-y-0 disabled:hover:shadow-none disabled:active:scale-100"
               >
                 {submitting ? "Memproses..." : "Konfirmasi Booking"}
               </button>
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="w-full cursor-pointer py-3 text-center text-[13px] font-semibold text-tf-muted"
+                className="w-full cursor-pointer py-3 text-center text-[13px] font-semibold text-tf-muted transition-all duration-200 hover:text-tf-ink active:scale-95"
               >
                 ← Kembali ke data pemesan
               </button>
@@ -691,7 +691,7 @@ export function BookingSection({
             <button
               type="button"
               onClick={resetBooking}
-              className="inline-block cursor-pointer rounded-[10px] border-[1.5px] border-tf-ink/20 px-6 py-3 text-sm font-semibold text-tf-ink"
+              className="inline-block cursor-pointer rounded-[10px] border-[1.5px] border-tf-ink/20 px-6 py-3 text-sm font-semibold text-tf-ink transition-all duration-200 hover:-translate-y-0.5 hover:border-tf-green hover:text-tf-green active:translate-y-0 active:scale-95"
             >
               Buat booking lain
             </button>
