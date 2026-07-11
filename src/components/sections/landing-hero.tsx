@@ -8,7 +8,7 @@ const STATS = [
 
 export function LandingHero() {
   return (
-    <div className="relative flex min-h-[88svh] items-center overflow-hidden bg-tf-forest md:min-h-0">
+    <div className="relative flex min-h-[88svh] items-center overflow-hidden bg-tf-forest md:min-h-svh">
       <Image
         src="/court.jpg"
         alt="Lapangan Booking Futsal"
