@@ -80,7 +80,9 @@ export default function AdminPage() {
   }, [date, fieldId]);
 
   useEffect(() => {
-    load();
+    (async () => {
+      await load();
+    })();
   }, [load]);
 
   useEffect(() => {

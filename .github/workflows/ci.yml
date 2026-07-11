@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Batalkan run lama kalau ada push baru ke branch/PR yang sama.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Hanya unit test (src/**) — test/booking-api.test.ts butuh server
+      # hidup + 2 akun & 1 lapangan yang di-seed manual, belum ada script
+      # seed otomatis di repo ini. Jalankan integrasi itu manual di lokal.
+      - run: npx vitest run src --passWithNoTests
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          # Nilai bohongan cukup — semua route DB (termasuk "/") pakai
+          # `export const dynamic = "force-dynamic"` / route dinamis,
+          # jadi tidak ada query yang benar-benar jalan saat build,
+          # cuma perlu string non-kosong biar neon() tidak throw.
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          JWT_SECRET: ci-build-placeholder-not-a-real-secret

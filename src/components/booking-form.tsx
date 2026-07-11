@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -38,23 +38,29 @@ export function BookingForm({
   const [startHour, setStartHour] = useState<number | null>(null);
   const [duration, setDuration] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-
-  const loadSlots = useCallback(async () => {
-    setSlots(null);
-    setStartHour(null);
-    setDuration(1);
-    const res = await fetch(`/api/fields/${fieldId}/availability?date=${date}`);
-    const data = await res.json().catch(() => null);
-    if (!res.ok) {
-      toast.error(data?.error ?? "Gagal memuat jadwal, coba lagi.");
-      return;
-    }
-    setSlots(data.slots);
-  }, [fieldId, date]);
+  // Penanda refetch manual (setelah 409) — slot juga otomatis dimuat ulang
+  // saat tanggal berganti.
+  const [slotsVersion, setSlotsVersion] = useState(0);
 
   useEffect(() => {
-    loadSlots();
-  }, [loadSlots]);
+    let ignore = false;
+    (async () => {
+      setSlots(null);
+      setStartHour(null);
+      setDuration(1);
+      const res = await fetch(`/api/fields/${fieldId}/availability?date=${date}`);
+      const data = await res.json().catch(() => null);
+      if (ignore) return;
+      if (!res.ok) {
+        toast.error(data?.error ?? "Gagal memuat jadwal, coba lagi.");
+        return;
+      }
+      setSlots(data.slots);
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, [fieldId, date, slotsVersion]);
 
   // durasi maksimal = slot kosong beruntun mulai dari jam terpilih
   const maxDuration = (() => {
@@ -90,7 +96,7 @@ export function BookingForm({
       // slot barusan direbut orang — tampilkan pesan API lalu refresh grid
       toast.error(data?.error ?? "Jam tersebut sudah dibooking.");
       setSubmitting(false);
-      loadSlots();
+      setSlotsVersion((v) => v + 1);
       return;
     }
     if (!res.ok) {

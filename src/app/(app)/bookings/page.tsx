@@ -99,7 +99,9 @@ export default function BookingsPage() {
   }, []);
 
   useEffect(() => {
-    load();
+    (async () => {
+      await load();
+    })();
   }, [load]);
 
   async function handleUpload(id: string, file: File | undefined) {
