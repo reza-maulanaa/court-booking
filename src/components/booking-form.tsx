@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DateChips } from "@/components/date-chips";
-import { todayWIB } from "@/lib/constants";
+import { PROOF_DEADLINE_MIN, todayWIB } from "@/lib/constants";
 
 type Slot = { hour: number; available: boolean };
 
@@ -106,7 +106,7 @@ export function BookingForm({
     }
 
     toast.success(
-      "Booking dibuat! Transfer & upload bukti dalam 30 menit ya.",
+      `Booking dibuat! Transfer & upload bukti dalam ${PROOF_DEADLINE_MIN} menit ya.`,
     );
     router.push("/bookings");
   }

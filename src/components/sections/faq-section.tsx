@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SectionHeading } from "./section-heading";
+import { PROOF_DEADLINE_MIN } from "@/lib/constants";
 
 const FAQS = [
   {
@@ -22,7 +23,7 @@ const FAQS = [
   },
   {
     q: "Berapa lama slot ditahan sebelum dibayar?",
-    a: "Untuk QRIS dan transfer, slot ditahan 30 menit setelah booking. Untuk bayar di tempat, slot langsung terkunci dengan kode booking.",
+    a: `Untuk QRIS dan transfer, slot ditahan ${PROOF_DEADLINE_MIN} menit setelah booking. Untuk bayar di tempat, slot langsung terkunci dengan kode booking.`,
   },
 ];
 

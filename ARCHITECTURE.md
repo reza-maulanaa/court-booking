@@ -103,7 +103,7 @@ Enum: `pending`, `confirmed`, `completed`, `cancelled`, `expired`
 | pending | confirmed | approve (bukti transfer cocok dgn mutasi) | admin |
 | pending | cancelled | reject | admin |
 | pending | cancelled | batalkan sendiri | user pemilik |
-| pending | expired | 30 menit tanpa bukti transfer (lazy, §9) | sistem |
+| pending | expired | 5 menit tanpa bukti transfer (lazy, §9) | sistem |
 | confirmed | completed | sesi selesai dimainkan | admin |
 | confirmed | cancelled | pembatalan setelah konfirmasi | admin |
 
@@ -221,14 +221,14 @@ halaman "booking saya" — email jadi murni nice-to-have, di luar MVP.
 ### Alur
 
 1. Booking dibuat → `pending`, slot langsung ke-hold (melindungi user
-   jujur yang sedang buka m-banking; penyerang iseng dibatasi 30 menit).
+   jujur yang sedang buka m-banking; penyerang iseng dibatasi 5 menit).
 2. User bayar manual — QRIS (gambar statis `public/qris.svg`) atau
    transfer bank — lalu upload bukti (gambar) → `proof_url` terisi,
    tetap `pending`, tidak bisa hangus lagi. Metode bayar TIDAK disimpan:
    buktinya satu jenis, admin memverifikasi ke mutasi/dashboard QRIS
    apa pun metodenya — kolom `payment_method` = state tanpa keputusan.
 3. Admin cocokkan bukti dengan mutasi rekening → confirm / reject (§5).
-4. Tanpa upload dalam 30 menit → `expired`, slot terlepas.
+4. Tanpa upload dalam 5 menit → `expired`, slot terlepas.
 
 ### Kadaluarsa lazy — tanpa cron (keputusan final #5)
 
@@ -251,6 +251,33 @@ dipanggil di jalur availability, buat booking, list booking, list admin.
   `status NOT IN ('cancelled','expired')`; nilai enum baru tidak boleh
   dipakai di transaksi yang sama dengan pembuatannya → dua file migration
   (0002 enum+kolom, 0003 constraint).
+
+### Anti-abuse: deadline dipersingkat + batas booking belum bayar (revisi 2026-07-12)
+
+Skenario yang mau dicegah: satu akun booking banyak/semua slot kosong
+tanpa pernah bermaksud bayar, cuma buat mengganggu user lain (semua slot
+kelihatan penuh). Lazy expiration (di atas) sudah membatasi durasi
+gangguan per booking, tapi 30 menit cukup lama untuk mengunci banyak slot
+sekaligus lalu diulang terus. Dua perubahan:
+
+- **`PROOF_DEADLINE_MIN` 30 → 5 menit** (`lib/constants.ts`, satu-satunya
+  sumber nilai — dipakai `expireStaleBookings()`, pesan UI, dan FAQ,
+  jangan pernah hardcode ulang teks "X menit"). Trade-off sadar: user
+  jujur yang transfer manual (bukan QRIS instan) mepet waktunya — dianggap
+  sepadan mengingat mayoritas pembayaran di app ini QRIS/scan cepat.
+- **`MAX_PENDING_UNPAID_BOOKINGS = 3`**: `POST /api/bookings` menolak
+  (429) kalau user yang sama sudah punya ≥3 booking `pending` DENGAN
+  `proof_url IS NULL`. Booking yang sudah ada buktinya tidak dihitung —
+  itu sudah niat bayar, tinggal nunggu admin, bukan slot yang "digantung".
+  Dicek per-request (query count, bukan constraint DB) karena ini aturan
+  kuantitas, bukan aturan "boleh/tidak" yang butuh atomicity ketat seperti
+  EXCLUDE constraint §4 — sedikit race (dua request nyaris bersamaan lolos
+  kedua-duanya) diterima, dampaknya cuma +1 slot terkunci sesaat.
+- **Belum ditangani** (di luar scope perbaikan ini, catat kalau jadi
+  masalah nyata): satu orang bikin banyak akun buat kelilingi limit ini
+  (butuh rate-limit registrasi per IP/device) dan rate-limit di endpoint
+  `POST /api/bookings` itu sendiri (saat ini cuma dibatasi limit total,
+  bukan kecepatan submit).
 
 ### Penyimpanan bukti (Supabase Storage — revisi 2026-07-12, menggantikan Vercel Blob)
 

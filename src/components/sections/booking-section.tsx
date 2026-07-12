@@ -350,7 +350,9 @@ export function BookingSection({
     if (failedError)
       toast.error(`Sebagian jam gagal dibooking: ${failedError}`);
     else
-      toast.success("Booking dibuat! Transfer & upload bukti dalam 30 menit ya.");
+      toast.success(
+        `Booking dibuat! Transfer & upload bukti dalam ${PROOF_DEADLINE_MIN} menit ya.`,
+      );
 
     setDone({
       summary: `${field.name} · ${dates[dateIdx].full} · ${createdHours

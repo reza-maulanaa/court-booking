@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { db, expireStaleBookings } from "@/db";
 import { bookings, fields } from "@/db/schema";
 import { createBookingSchema } from "@/lib/validator";
 import { getSession } from "@/lib/auth";
 import { pgErrorCode } from "@/lib/pg-error";
+import { MAX_PENDING_UNPAID_BOOKINGS } from "@/lib/constants";
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -33,6 +34,27 @@ export async function POST(req: Request) {
   // Pending basi masih "menduduki" EXCLUDE constraint — bereskan dulu,
   // supaya slot yang tidak jadi dibayar bisa dibooking user lain.
   await expireStaleBookings();
+
+  // Anti-abuse: cegah satu user mengunci banyak slot sekaligus tanpa pernah
+  // bayar (mis. booking semua jam kosong lalu dibiarkan). Booking yang
+  // sudah ada buktinya tidak dihitung — itu sudah niat bayar, tinggal
+  // nunggu admin. Dicek per-request (bukan constraint DB) karena ini aturan
+  // "seberapa banyak", bukan "boleh/tidak" yang butuh atomicity ketat.
+  const pendingUnpaid = await db.query.bookings.findMany({
+    where: and(
+      eq(bookings.userId, session.sub),
+      eq(bookings.status, "pending"),
+      isNull(bookings.proofUrl),
+    ),
+    columns: { id: true },
+  });
+  if (pendingUnpaid.length >= MAX_PENDING_UNPAID_BOOKINGS)
+    return NextResponse.json(
+      {
+        error: `Kamu punya ${pendingUnpaid.length} booking belum dibayar. Selesaikan pembayarannya dulu (atau tunggu kadaluarsa) sebelum booking slot baru.`,
+      },
+      { status: 429 },
+    );
 
   try {
     const [booking] = await db

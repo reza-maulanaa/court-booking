@@ -5,7 +5,7 @@
 Aplikasi web untuk booking lapangan futsal. User melihat katalog lapangan,
 mengecek ketersediaan per jam, dan membuat booking. Pembayaran manual
 (QRIS atau transfer bank — sama saja bagi sistem, yang disimpan cuma
-bukti): user bayar lalu upload bukti (gambar) dalam 30 menit — lewat dari itu
+bukti): user bayar lalu upload bukti (gambar) dalam 5 menit — lewat dari itu
 booking hangus otomatis dan slot terlepas. Admin mencocokkan bukti dengan
 mutasi rekening lalu approve/reject. (Semula konfirmasi via email
 Resend/Brevo — diganti, lihat ARCHITECTURE §9.)
@@ -49,9 +49,12 @@ custom JWT (jose), Zod, Tailwind v4 + shadcn/ui, Vitest, deploy Vercel.
   Total = `harga_snapshot × duration_hours` (dihitung, tidak disimpan).
   Perubahan harga lapangan tidak mengubah booking lama.
 - **Deadline pembayaran**: booking `pending` tanpa bukti transfer hangus
-  30 menit setelah dibuat (status `expired`, slot terlepas). Evaluasi
+  5 menit setelah dibuat (status `expired`, slot terlepas). Evaluasi
   lazy — saat data dibaca/ditulis, tanpa cron (ARCHITECTURE §9).
   `pending` yang SUDAH punya bukti tidak hangus (menunggu admin).
+- **Anti-abuse**: satu user maksimal boleh punya 3 booking `pending` TANPA
+  bukti sekaligus — mencegah satu akun mengunci banyak slot cuma buat
+  iseng (ARCHITECTURE §9). Booking yang sudah ada buktinya tidak dihitung.
 - **Status**: state machine `pending → confirmed → completed / cancelled`,
   plus `pending → expired` otomatis (transisi lengkap di ARCHITECTURE §5).
 - **Cancel oleh user**: hanya saat `pending`. Setelah `confirmed`,
@@ -95,5 +98,7 @@ Validasi input semua endpoint dengan Zod. Proteksi route via middleware
 - Double-booking terbukti tidak mungkin: test Vitest yang insert dua booking
   overlap secara paralel — satu sukses, satu dapat error ramah.
 - Transisi status di luar tabel valid ditolak.
-- Booking `pending` tanpa bukti yang lewat 30 menit tidak lagi memblokir
+- Booking `pending` tanpa bukti yang lewat 5 menit tidak lagi memblokir
   slot, dan upload setelahnya ditolak dengan pesan kadaluarsa.
+- User dengan 3 booking `pending` tanpa bukti mendapat penolakan ramah
+  (429) saat mencoba booking slot baru lagi.

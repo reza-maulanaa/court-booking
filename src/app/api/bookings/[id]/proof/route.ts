@@ -5,6 +5,7 @@ import { bookings } from "@/db/schema";
 import { getSession } from "@/lib/auth";
 import { proofFileError } from "@/lib/validator";
 import { supabaseAdmin, PROOF_BUCKET } from "@/lib/supabase";
+import { PROOF_DEADLINE_MIN } from "@/lib/constants";
 
 export async function POST(
   req: Request,
@@ -39,7 +40,7 @@ export async function POST(
       {
         error:
           b.status === "expired"
-            ? "Booking kadaluarsa (lewat batas 30 menit), silakan booking ulang"
+            ? `Booking kadaluarsa (lewat batas ${PROOF_DEADLINE_MIN} menit), silakan booking ulang`
             : `Booking berstatus ${b.status}, tidak perlu upload bukti`,
       },
       { status: 409 },
