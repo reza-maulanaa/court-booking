@@ -34,6 +34,10 @@ const rupiah = new Intl.NumberFormat("id-ID", {
 
 const jam = (h: number) => `${String(h).padStart(2, "0")}.00`;
 
+// Kode cuma berarti (dan cuma ditampilkan) setelah admin ACC — sebelum itu
+// booking baru "pending", belum pasti jadi, jadi belum dapat kode.
+const bookingCode = (id: string) => `BF-${id.slice(0, 4).toUpperCase()}`;
+
 const tanggal = (iso: string) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString("id-ID", {
     weekday: "short",
@@ -173,6 +177,11 @@ export default function BookingsPage() {
                     <div className="font-semibold text-primary">
                       {rupiah.format(b.hargaSnapshot * b.durationHours)}
                     </div>
+                    {(b.status === "confirmed" || b.status === "completed") && (
+                      <div className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1 font-mono text-sm font-bold text-primary">
+                        {bookingCode(b.id)}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <StatusBadge status={b.status} />
@@ -194,7 +203,8 @@ export default function BookingsPage() {
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <span>
                             Bukti transfer terkirim ✓ — menunggu verifikasi
-                            admin.{" "}
+                            admin. Kode booking muncul di sini begitu
+                            disetujui.{" "}
                             <a
                               href={`/api/bookings/${b.id}/proof`}
                               target="_blank"

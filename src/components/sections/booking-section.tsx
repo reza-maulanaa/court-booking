@@ -154,7 +154,6 @@ export function BookingSection({
   const [pay, setPay] = useState<(typeof PAY_OPTIONS)[number]["id"]>("qris");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{
-    code: string;
     summary: string;
     ids: string[];
   } | null>(null);
@@ -354,7 +353,6 @@ export function BookingSection({
       toast.success("Booking dibuat! Transfer & upload bukti dalam 30 menit ya.");
 
     setDone({
-      code: `BF-${created[0].id.slice(0, 4).toUpperCase()}`,
       summary: `${field.name} · ${dates[dateIdx].full} · ${createdHours
         .map((h) => `${pad(h)}:00`)
         .join(", ")}`,
@@ -753,38 +751,32 @@ export function BookingSection({
           <div className="pt-7 pb-3">
             <div className="text-center">
               <div className="mx-auto mb-[18px] grid size-[72px] place-items-center rounded-full border-2 border-tf-green bg-tf-pale font-barlow-condensed text-[34px] font-extrabold text-tf-green">
-                ✓
+                {proofDone ? "⏳" : "🔒"}
               </div>
-              <div className="font-barlow-condensed text-[38px] font-extrabold italic uppercase text-tf-ink">
-                Booking Berhasil!
+              <div className="font-barlow-condensed text-[32px] font-extrabold italic uppercase text-tf-ink">
+                {proofDone
+                  ? "Menunggu Verifikasi Admin"
+                  : "Slot Dikunci — Lanjutkan Pembayaran"}
               </div>
-              <div className="mt-2.5 mb-[18px] text-[15px] text-tf-muted">
-                Kode booking kamu — tunjukkan saat datang:
-              </div>
-              <div className="inline-block rounded-[10px] bg-tf-ink px-[30px] py-3 font-barlow-condensed text-[30px] font-extrabold tracking-[3px] text-tf-lime">
-                {done.code}
-              </div>
-              <div className="mt-[18px] mb-[8px] text-sm text-tf-muted">
+              <div className="mt-2.5 mb-[8px] text-[15px] text-tf-muted">
                 {done.summary}
               </div>
+              {proofDone && (
+                <p className="mx-auto mt-2 mb-[8px] max-w-md text-sm text-tf-muted">
+                  Bukti sudah terkirim. Admin akan mencocokkan dengan mutasi
+                  rekening — kode booking &amp; konfirmasi final muncul di
+                  halaman <strong className="text-tf-ink">Booking Saya</strong>{" "}
+                  begitu disetujui. Kalau ditolak, booking otomatis batal dan
+                  slotnya lepas.
+                </p>
+              )}
             </div>
 
-            <div className="mx-auto mt-8 max-w-md rounded-xl bg-tf-mist px-5 py-5 sm:px-7 sm:py-6">
-              <div className="mb-3 text-[15px] font-bold text-tf-ink">
-                4. Upload bukti pembayaran
-              </div>
-              {proofDone ? (
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <p className="text-sm text-tf-muted">
-                    Bukti terkirim ✓ — menunggu verifikasi admin.
-                  </p>
-                  <ProofUploadLabel
-                    uploading={proofUploading}
-                    label="Ganti bukti"
-                    onFile={uploadProof}
-                  />
+            {!proofDone && (
+              <div className="mx-auto mt-8 max-w-md rounded-xl bg-tf-mist px-5 py-5 sm:px-7 sm:py-6">
+                <div className="mb-3 text-[15px] font-bold text-tf-ink">
+                  4. Upload bukti pembayaran
                 </div>
-              ) : (
                 <div className="flex flex-col gap-4">
                   <p className="text-sm text-tf-muted">
                     Bayar{" "}
@@ -795,7 +787,8 @@ export function BookingSection({
                     <strong className="font-bold text-tf-ink">
                       {PROOF_DEADLINE_MIN} menit
                     </strong>{" "}
-                    — lewat dari itu booking hangus otomatis.
+                    — lewat dari itu booking hangus otomatis. Slot baru pasti
+                    jadi milikmu setelah admin memverifikasi buktinya.
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
                     {/* eslint-disable-next-line @next/next/no-img-element -- aset statis, tak perlu optimasi next/image */}
@@ -824,25 +817,23 @@ export function BookingSection({
                     onFile={uploadProof}
                   />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <div className="mt-6 flex flex-col items-center gap-2 text-center">
+              <Link
+                href="/bookings"
+                className="inline-block cursor-pointer rounded-[10px] bg-tf-green px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-tf-green-deep hover:shadow-lg hover:shadow-tf-green/30 active:translate-y-0 active:scale-95"
+              >
+                {proofDone ? "Lihat Status Booking →" : "Lanjutkan nanti di Booking Saya →"}
+              </Link>
               <button
                 type="button"
                 onClick={resetBooking}
-                className="inline-block cursor-pointer rounded-[10px] border-[1.5px] border-tf-ink/20 px-6 py-3 text-sm font-semibold text-tf-ink transition-all duration-200 hover:-translate-y-0.5 hover:border-tf-green hover:text-tf-green active:translate-y-0 active:scale-95"
+                className="inline-block cursor-pointer py-2 text-center text-[13px] font-semibold text-tf-muted transition-all duration-200 hover:text-tf-ink active:scale-95"
               >
                 Buat booking lain
               </button>
-              {!proofDone && (
-                <Link
-                  href="/bookings"
-                  className="text-xs font-semibold text-tf-muted transition-all duration-200 hover:text-tf-ink"
-                >
-                  Lewati, upload nanti di halaman Booking Saya →
-                </Link>
-              )}
             </div>
           </div>
         )}

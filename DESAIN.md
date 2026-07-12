@@ -171,6 +171,22 @@ Halaman lain tetap §2 (shadcn + Geist + navbar/footer lama).
   Ini sejalan dengan batas §2b yang dari awal mengizinkan "micro-interaction
   kecil (hover card, transisi badge)" — bukan pengecualian baru. Slot jam
   yang disabled (terisi) sengaja tidak dapat animasi (bukan interaktif).
+- **Step 4 (upload bukti) di landing + kode booking digeser ke setelah ACC
+  admin** (2026-07-12): sebelumnya begitu `POST /api/bookings` sukses
+  (status masih `pending`, belum dibayar/diverifikasi), UI langsung bilang
+  "Booking Berhasil!" + tampilkan kode — menyesatkan, karena booking itu
+  belum final (bisa `expired` kalau bukti tak diupload, atau ditolak admin).
+  Diperbaiki: step 4 sekarang cuma bilang "Slot Dikunci" (belum upload
+  bukti) lalu "Menunggu Verifikasi Admin" (sudah upload) — **tidak ada kode
+  ditampilkan di titik mana pun sebelum admin ACC**. Kode (`BF-XXXX`, masih
+  4 karakter pertama id booking, poin (4) di atas) baru muncul di halaman
+  "Booking Saya" setelah status jadi `confirmed`/`completed`; kalau admin
+  tolak (`cancelled`), tidak pernah dapat kode. Tidak ada perubahan skema
+  atau state machine (ARCHITECTURE §5) — booking tetap harus dibuat sebagai
+  `pending` di titik itu juga supaya slotnya terkunci (EXCLUDE constraint,
+  ARCHITECTURE §4), cuma penamaan/tampilan yang diperbaiki. Notifikasi
+  email eksplisit tetap di luar scope (SPEC §2) — status & kode cukup
+  dilihat di halaman "Booking Saya", sesuai keputusan user.
 
 ## 2e. Identitas brand meluas ke seluruh (app) — bukan landing saja (2026-07-11)
 
