@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { SectionHeading } from "./section-heading";
@@ -135,7 +134,6 @@ export function BookingSection({
   isLoggedIn: boolean;
   userName: string;
 }) {
-  const router = useRouter();
   const dates = useMemo(() => dateOptions(), []);
 
   const [step, setStep] = useState(1);
@@ -285,11 +283,6 @@ export function BookingSection({
 
   async function confirmBooking() {
     if (done || submitting || !field) return;
-    if (!isLoggedIn) {
-      toast.error("Silakan login dulu untuk booking.");
-      router.push("/login");
-      return;
-    }
     setSubmitting(true);
 
     // Backend: satu booking = satu rentang kontinu (startHour + durationHours).
@@ -312,15 +305,11 @@ export function BookingSection({
         body: JSON.stringify({
           fieldId: field.id,
           bookingDate: dates[dateIdx].iso,
+          ...(!isLoggedIn ? { guestName: name, guestPhone: phone } : {}),
           ...run,
         }),
       });
       const data = await res.json().catch(() => null);
-      if (res.status === 401) {
-        toast.error("Silakan login dulu untuk booking.");
-        router.push("/login");
-        return;
-      }
       if (!res.ok) {
         failedError = data?.error ?? "Terjadi kesalahan, coba lagi.";
         break;
@@ -819,11 +808,17 @@ export function BookingSection({
 
             <div className="mt-6 flex flex-col items-center gap-2 text-center">
               <Link
-                href="/bookings"
+                href={isLoggedIn ? "/bookings" : `/bookings/${done.ids[0]}`}
                 className="inline-block cursor-pointer rounded-[10px] bg-tf-green px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-tf-green-deep hover:shadow-lg hover:shadow-tf-green/30 active:translate-y-0 active:scale-95"
               >
                 {proofDone ? "Lihat Status Booking →" : "Lanjutkan nanti di Booking Saya →"}
               </Link>
+              {!isLoggedIn && (
+                <p className="max-w-xs text-xs text-tf-muted">
+                  Simpan/bookmark link di atas — tanpa akun, ini satu-satunya
+                  cara cek status booking-mu nanti.
+                </p>
+              )}
               <button
                 type="button"
                 onClick={resetBooking}

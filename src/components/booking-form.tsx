@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -37,6 +38,8 @@ export function BookingForm({
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [startHour, setStartHour] = useState<number | null>(null);
   const [duration, setDuration] = useState(1);
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   // Penanda refetch manual (setelah 409) — slot juga otomatis dimuat ulang
   // saat tanggal berganti.
@@ -83,15 +86,12 @@ export function BookingForm({
         bookingDate: date,
         startHour,
         durationHours: duration,
+        guestName,
+        guestPhone,
       }),
     });
     const data = await res.json().catch(() => null);
 
-    if (res.status === 401) {
-      toast.error("Silakan login dulu untuk booking.");
-      router.push("/login");
-      return;
-    }
     if (res.status === 409) {
       // slot barusan direbut orang — tampilkan pesan API lalu refresh grid
       toast.error(data?.error ?? "Jam tersebut sudah dibooking.");
@@ -108,7 +108,7 @@ export function BookingForm({
     toast.success(
       `Booking dibuat! Transfer & upload bukti dalam ${PROOF_DEADLINE_MIN} menit ya.`,
     );
-    router.push("/bookings");
+    router.push(data.userId ? "/bookings" : `/bookings/${data.id}`);
   }
 
   return (
@@ -172,6 +172,36 @@ export function BookingForm({
           </Select>
         </div>
       )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="guestName" className="text-base font-semibold">
+            Nama
+          </Label>
+          <Input
+            id="guestName"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            placeholder="Nama kamu"
+            className="h-12 text-base"
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="guestPhone" className="text-base font-semibold">
+            No. WhatsApp
+          </Label>
+          <Input
+            id="guestPhone"
+            value={guestPhone}
+            onChange={(e) => setGuestPhone(e.target.value)}
+            placeholder="08xx-xxxx-xxxx"
+            className="h-12 text-base"
+          />
+        </div>
+      </div>
+      <p className="-mt-2 text-sm text-muted-foreground">
+        Sudah login? Boleh dikosongkan.
+      </p>
 
       <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-5">
         <div className="text-base">

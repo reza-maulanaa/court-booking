@@ -3,7 +3,7 @@
 import { buttonVariants, Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge, type BookingStatus } from "@/components/status-badge";
-import { MAX_PROOF_MB, PROOF_DEADLINE_MIN, TRANSFER_INFO } from "@/lib/constants";
+import { PROOF_DEADLINE_MIN, TRANSFER_INFO } from "@/lib/constants";
 
 export type BookingCardData = {
   id: string;
@@ -183,6 +183,3 @@ export function BookingCard({
     </Card>
   );
 }
-
-// Dipakai halaman yang cuma butuh cek batas ukuran sebelum upload.
-export { MAX_PROOF_MB };
