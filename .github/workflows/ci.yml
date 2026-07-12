@@ -62,3 +62,9 @@ jobs:
           # cuma perlu string non-kosong biar neon() tidak throw.
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
           JWT_SECRET: ci-build-placeholder-not-a-real-secret
+          # src/lib/supabase.ts bikin client Supabase Storage saat modul
+          # dimuat (bukan lazy) — createClient() sendiri validasi URL-nya
+          # walau tidak ada request yang benar-benar jalan saat build,
+          # jadi butuh string non-kosong berformat URL biar tidak throw.
+          NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ci-build-placeholder-not-a-real-key
