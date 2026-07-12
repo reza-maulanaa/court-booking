@@ -2,15 +2,14 @@ import { NextResponse } from "next/server";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { db, expireStaleBookings } from "@/db";
 import { bookings, fields } from "@/db/schema";
-import { createBookingSchema } from "@/lib/validator";
+import { createBookingSchema, guestBookingSchema } from "@/lib/validator";
 import { getSession } from "@/lib/auth";
 import { pgErrorCode } from "@/lib/pg-error";
 import { MAX_PENDING_UNPAID_BOOKINGS } from "@/lib/constants";
+import { normalizePhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   const session = await getSession();
-  if (!session)
-    return NextResponse.json({ error: "Silakan login dulu" }, { status: 401 });
 
   const body = await req.json().catch(() => null);
   const parsed = createBookingSchema.safeParse(body);
@@ -19,6 +18,21 @@ export async function POST(req: Request) {
       { error: parsed.error.issues[0].message },
       { status: 400 },
     );
+
+  // Tanpa login: nama & No. WhatsApp wajib — jadi identitas booking
+  // sekaligus kunci anti-abuse pengganti userId (lihat pendingUnpaid).
+  let guestName: string | null = null;
+  let guestPhone: string | null = null;
+  if (!session) {
+    const guestParsed = guestBookingSchema.safeParse(body);
+    if (!guestParsed.success)
+      return NextResponse.json(
+        { error: guestParsed.error.issues[0].message },
+        { status: 400 },
+      );
+    guestName = guestParsed.data.guestName;
+    guestPhone = normalizePhone(guestParsed.data.guestPhone);
+  }
 
   const { fieldId, bookingDate, startHour, durationHours } = parsed.data;
 

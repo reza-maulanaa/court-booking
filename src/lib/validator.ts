@@ -59,6 +59,20 @@ export const createBookingSchema = z
   });
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 
+// Guest checkout: dipakai POST /api/bookings kalau tak ada sesi login.
+const guestPhoneSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^(\+?62|0)8[0-9]{7,12}$/,
+    "No. WhatsApp tidak valid (format: 08xx atau 62/+62 8xx)",
+  );
+export const guestBookingSchema = z.object({
+  guestName: z.string().trim().min(1, "Nama wajib diisi").max(100),
+  guestPhone: guestPhoneSchema,
+});
+export type GuestBookingInput = z.infer<typeof guestBookingSchema>;
+
 // FormData tidak lewat Zod — validasi file manual, dipakai route proof.
 export function proofFileError(file: unknown): string | null {
   if (!(file instanceof File) || file.size === 0)
