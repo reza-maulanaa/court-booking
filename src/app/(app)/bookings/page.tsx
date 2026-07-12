@@ -140,7 +140,7 @@ export default function BookingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-extrabold tracking-tight">
+      <h1 className="font-heading mb-6 text-3xl font-extrabold tracking-wide uppercase italic">
         Booking Saya
       </h1>
 
@@ -149,7 +149,10 @@ export default function BookingsPage() {
       ) : bookings.length === 0 ? (
         <p className="text-base text-muted-foreground">
           Belum ada booking.{" "}
-          <Link href="/" className="text-primary underline">
+          <Link
+            href="/"
+            className="inline-block font-semibold text-primary transition-all duration-200 hover:scale-105 hover:text-primary/80 active:scale-95"
+          >
             Lihat jadwal lapangan →
           </Link>
         </p>
@@ -196,7 +199,7 @@ export default function BookingsPage() {
                               href={`/api/bookings/${b.id}/proof`}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-primary underline"
+                              className="inline-block font-semibold text-primary transition-all duration-200 hover:scale-105 hover:text-primary/80 active:scale-95"
                             >
                               Lihat bukti
                             </a>

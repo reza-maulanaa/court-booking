@@ -68,9 +68,11 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <Card className="w-full max-w-sm shadow-lg">
+    <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle className="text-2xl">{copy.title}</CardTitle>
+        <CardTitle className="text-3xl font-extrabold tracking-wide uppercase italic">
+          {copy.title}
+        </CardTitle>
         <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -119,14 +121,20 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           {mode === "login" ? (
             <>
               Belum punya akun?{" "}
-              <Link href="/register" className="text-primary underline">
+              <Link
+                href="/register"
+                className="inline-block font-semibold text-primary transition-all duration-200 hover:scale-105 hover:text-primary/80 active:scale-95"
+              >
                 Daftar
               </Link>
             </>
           ) : (
             <>
               Sudah punya akun?{" "}
-              <Link href="/login" className="text-primary underline">
+              <Link
+                href="/login"
+                className="inline-block font-semibold text-primary transition-all duration-200 hover:scale-105 hover:text-primary/80 active:scale-95"
+              >
                 Masuk
               </Link>
             </>

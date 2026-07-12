@@ -19,7 +19,7 @@ Keputusan desain frontend + alasannya. Kode UI ditulis mengikuti dokumen ini
    ramah bahasa Indonesia — UI menampilkan apa adanya, tidak menerjemahkan
    ulang. Satu sumber pesan.
 
-## 2. Tema & token
+## 2. Tema & token (nilai warna/font DIGANTIKAN §2e — struktur token tetap)
 
 - Base: netral `zinc` bawaan shadcn, background putih.
 - Aksen (primary): **hijau tua lapangan** `oklch(0.527 0.154 150)`
@@ -29,12 +29,18 @@ Keputusan desain frontend + alasannya. Kode UI ditulis mengikuti dokumen ini
   Alasan hijau tua (bukan muda): teks putih di atasnya lolos kontras
   4.5:1; hijau muda maksa teks gelap dan pucat di background putih.
   (Keputusan 2026-07-04: user menolak primary hitam default shadcn.)
+  **→ §2e (2026-07-11): nilai persis diganti `#0e7b45` (tf-green), tapi
+  prinsip "satu token, semua komponen ngikut" ini justru yang dipakai
+  untuk migrasi ke identitas landing — bukan diganti caranya.**
 - Status booking → warna badge (satu-satunya pemakaian warna di luar aksen):
   `pending` kuning, `confirmed` hijau, `completed` abu netral,
-  `cancelled` merah pudar.
-- Font: Geist (bawaan create-next-app). Radius & shadow: default shadcn.
+  `cancelled` merah pudar. **Keputusan ini tetap berlaku pasca-§2e** —
+  tidak diseragamkan jadi hijau brand.
+- Font: ~~Geist (bawaan create-next-app)~~ → Barlow/Barlow Condensed
+  sejak §2e. Radius & shadow: default shadcn, radius dipertahankan
+  (sudah cocok dengan landing), shadow Card diperbarui di §2e.
 - **Tidak dibuat**: dark mode. Alasan: nambah ±2× kerja styling tanpa
-  nambah nilai demo MVP.
+  nambah nilai demo MVP. (Masih berlaku pasca-§2e — lihat §2e.)
 
 ## 2b. Hero section & animasi (keputusan 2026-07-04 — DIGANTIKAN §2c)
 
@@ -165,6 +171,60 @@ Halaman lain tetap §2 (shadcn + Geist + navbar/footer lama).
   Ini sejalan dengan batas §2b yang dari awal mengizinkan "micro-interaction
   kecil (hover card, transisi badge)" — bukan pengecualian baru. Slot jam
   yang disabled (terisi) sengaja tidak dapat animasi (bukan interaktif).
+
+## 2e. Identitas brand meluas ke seluruh (app) — bukan landing saja (2026-07-11)
+
+Keputusan user (dipilih via opsi, "restyle semua"): identitas visual §2d
+(font Barlow, palet `tf-*`, radius, micro-interaction tombol) yang tadinya
+cuma di `/`, sekarang jadi identitas **satu aplikasi** — termasuk Navbar +
+footer (app) yang dipakai bersama oleh `/login`, `/register`, `/admin`,
+`/bookings`, `/fields/[id]`. §2 (shadcn + Geist) resmi digantikan §2e untuk
+seluruh app, bukan cuma landing.
+
+**Strategi implementasi — retarget token, bukan tulis ulang komponen:**
+Karena halaman (app) sudah dibangun di atas shadcn/ui yang men-drive
+warna/radius lewat CSS custom property (`--primary`, `--background`,
+`--muted`, `--ring`, dst — dikonsumsi via utility Tailwind seperti
+`bg-primary`, `text-foreground`), cara paling efisien & termudah dirawat
+adalah me-retarget nilai token itu di `:root` (`globals.css`) ke hex `tf-*`
+yang sama persis dengan landing — BUKAN menulis ulang className tiap
+Button/Card/Input satu-satu. Efeknya otomatis menjalar ke semua pemakaian
+komponen itu di seluruh app tanpa disentuh manual.
+
+- `--primary` → `#0e7b45` (tf-green, sama persis dengan aksen landing),
+  `--primary-foreground` → putih, `--ring` → tf-green (focus ring).
+- `--background`/`--foreground` → putih/tf-ink. `--muted`/`--secondary`
+  → tf-mist, `--accent` → tf-pale — neutral dipilih (bukan default abu
+  oklch), konsisten prinsip "choose neutrals, don't default to them".
+- `--destructive` **sengaja tidak diubah** (tetap merah) — begitu juga
+  `StatusBadge` (pending kuning, cancelled merah, dst, §2): warna status
+  booking adalah satu-satunya pemakaian warna semantik di luar aksen,
+  keputusan §2 lama tetap berlaku, bukan diseragamkan jadi hijau.
+- Dark mode (`.dark` token) dibiarkan tidak disentuh — dikonfirmasi tidak
+  ada `ThemeProvider` terpasang di mana pun (`useTheme()` di `sonner.tsx`
+  jatuh ke default tanpa provider), jadi token itu memang tidak pernah
+  aktif; sesuai §2 "Tidak dibuat: dark mode."
+- **Font**: Barlow + Barlow Condensed pindah dari `page.tsx` (landing-only)
+  ke `layout.tsx` (root, site-wide), Geist dihapus total. `--font-sans`
+  diarahkan ke Barlow (sebelumnya `var(--font-sans)` — self-reference,
+  bug lama yang tidak pernah nyala) dan `--font-heading` ke Barlow
+  Condensed, supaya `CardTitle` (dipakai AuthForm) & heading manual di
+  admin/bookings/fields otomatis dapat font display tanpa override
+  per-halaman.
+- **Button** (`ui/button.tsx`, dipakai di semua (app) page): base weight
+  naik ke `font-bold`; `active:translate-y-px` lama diganti
+  `active:scale-[0.97]` (konsisten pola landing). Hover-lift + shadow
+  cuma di size `default`/`lg` (dipakai submit form/CTA) — size `sm`/`xs`
+  (tombol aksi tabel admin, navbar) sengaja tidak lift, supaya tabel
+  padat berisi banyak tombol tidak "loncat-loncat" saat disapu mouse.
+- **Card**: radius naik `rounded-xl` → `rounded-2xl` + shadow landing
+  (`shadow-[0_2px_10px_rgba(18,36,26,.05)]`), radius `--radius` (10px,
+  dipakai Input/Select/Button) sudah pas sama dengan landing, tidak
+  diubah.
+- Heading `<h1>` di admin/bookings/fields dan `CardTitle` di AuthForm
+  pakai treatment sama dengan section-heading landing: `font-heading`
+  extrabold uppercase italic. Link inline (`text-primary underline`)
+  diseragamkan ke pola landing: tanpa underline, warna+scale+transisi.
 
 ## 3. Peta halaman
 

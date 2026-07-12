@@ -13,7 +13,9 @@ export default function AppLayout({
       {children}
       <footer className="mt-auto border-t bg-muted/40">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-8 text-sm text-muted-foreground sm:flex-row">
-          <p className="font-semibold text-foreground">Booking Futsal</p>
+          <p className="font-heading text-lg font-extrabold uppercase tracking-wide text-foreground">
+            Booking Futsal
+          </p>
           <p>Buka setiap hari 08.00–23.00 WIB</p>
         </div>
       </footer>

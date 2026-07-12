@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow, Barlow_Condensed } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Font brand (DESAIN §2d/§2e) — dipakai site-wide, landing maupun (app).
+const barlow = Barlow({
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
+  variable: "--font-barlow",
 });
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const barlowCondensed = Barlow_Condensed({
+  weight: ["700", "800"],
+  style: ["normal", "italic"],
   subsets: ["latin"],
+  variable: "--font-barlow-condensed",
 });
 
 export const metadata: Metadata = {
-  title: "Booking Lapangan Futsal",
+  title: "Booking Futsal",
   description: "Booking lapangan futsal online — pilih jam, langsung main.",
 };
 
@@ -26,9 +29,9 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased motion-safe:scroll-smooth`}
+      className={`${barlow.variable} ${barlowCondensed.variable} h-full antialiased motion-safe:scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-sans">
         {children}
         <Toaster position="top-center" richColors />
       </body>

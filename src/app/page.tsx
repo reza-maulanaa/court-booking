@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Barlow, Barlow_Condensed } from "next/font/google";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { db, expireStaleBookings } from "@/db";
 import { bookings, users } from "@/db/schema";
@@ -15,19 +14,6 @@ import { TestimonialsSection } from "@/components/sections/testimonials-section"
 import { FaqSection } from "@/components/sections/faq-section";
 import { LocationSection } from "@/components/sections/location-section";
 import { LandingFooter } from "@/components/sections/landing-footer";
-
-// Font landing (DESAIN §2d) — hanya halaman "/"; halaman lain tetap Geist.
-const barlow = Barlow({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-barlow",
-});
-const barlowCondensed = Barlow_Condensed({
-  weight: ["700", "800"],
-  style: ["normal", "italic"],
-  subsets: ["latin"],
-  variable: "--font-barlow-condensed",
-});
 
 export const metadata: Metadata = {
   title: "Booking Futsal — Booking lapangan, langsung main",
@@ -87,9 +73,7 @@ export default async function Home() {
   }));
 
   return (
-    <div
-      className={`${barlow.variable} ${barlowCondensed.variable} font-barlow bg-white text-tf-ink`}
-    >
+    <div>
       <LandingNav
         isLoggedIn={session !== null}
         isAdmin={session?.role === "admin"}

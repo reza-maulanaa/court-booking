@@ -22,7 +22,7 @@ export default async function FieldPage({
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8 md:py-12">
       <div className="mb-8 rounded-2xl border bg-gradient-to-br from-primary/10 to-transparent p-6">
-        <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">
+        <h1 className="font-heading text-3xl font-extrabold tracking-wide uppercase italic md:text-4xl">
           {field.name}
         </h1>
         <p className="mt-1 text-base text-muted-foreground md:text-lg">

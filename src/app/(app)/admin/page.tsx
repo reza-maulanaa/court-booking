@@ -108,17 +108,19 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-extrabold tracking-tight">
+      <h1 className="font-heading mb-6 text-4xl font-extrabold tracking-wide uppercase italic">
         Dashboard Admin
       </h1>
 
       <div className="mb-6 grid gap-4">
         <div className="grid gap-2">
-          <span className="text-sm font-medium">Tanggal</span>
+          <span className="text-sm font-bold">Tanggal</span>
           <DateChips value={date} onChange={setDate} withAll />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="filter-lapangan">Lapangan</Label>
+          <Label htmlFor="filter-lapangan" className="font-bold">
+            Lapangan
+          </Label>
           <Select value={fieldId} onValueChange={setFieldId}>
             <SelectTrigger id="filter-lapangan" className="w-44">
               <SelectValue />
@@ -142,7 +144,7 @@ export default function AdminPage() {
           Tidak ada booking untuk filter ini.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border">
+        <div className="overflow-x-auto rounded-2xl border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -179,7 +181,7 @@ export default function AdminPage() {
                         href={`/api/bookings/${b.id}/proof`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-primary underline"
+                        className="inline-block font-semibold text-primary transition-all duration-200 hover:scale-105 hover:text-primary/80 active:scale-95"
                       >
                         Lihat
                       </a>
