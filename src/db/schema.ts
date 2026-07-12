@@ -38,9 +38,9 @@ export const bookings = pgTable("bookings", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
+  userId: text("user_id").references(() => users.id),
+  guestName: text("guest_name"),
+  guestPhone: text("guest_phone"),
   fieldId: text("field_id")
     .notNull()
     .references(() => fields.id),

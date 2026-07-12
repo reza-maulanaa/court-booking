@@ -29,6 +29,13 @@
       "when": 1783219908661,
       "tag": "0003_no-overlap-excludes-expired",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783864150352,
+      "tag": "0004_guest-booking-columns",
+      "breakpoints": true
     }
   ]
 }
