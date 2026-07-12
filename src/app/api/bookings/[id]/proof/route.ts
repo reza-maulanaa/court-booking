@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
-import { put, del, get } from "@vercel/blob";
 import { db, expireStaleBookings } from "@/db";
 import { bookings } from "@/db/schema";
 import { getSession } from "@/lib/auth";
 import { proofFileError } from "@/lib/validator";
+import { supabaseAdmin, PROOF_BUCKET } from "@/lib/supabase";
 
 export async function POST(
   req: Request,
@@ -45,17 +45,29 @@ export async function POST(
       { status: 409 },
     );
 
-  // Store PRIVATE: bukti transfer = data finansial. Blob tidak bisa
-  // diakses langsung — hanya lewat GET di bawah (cek pemilik/admin).
-  // addRandomSuffix tetap: re-upload = path baru, tanpa allowOverwrite.
-  const blob = await put(`bukti-transfer/${id}`, file as File, {
-    access: "private",
-    addRandomSuffix: true,
-  });
+  // Store PRIVATE (bucket dibuat private di dashboard Supabase): bukti
+  // transfer = data finansial, tidak bisa diakses langsung — hanya lewat
+  // GET di bawah (cek pemilik/admin, service role key). Path diberi
+  // UUID acak sendiri (bukan addRandomSuffix Vercel Blob) — re-upload
+  // jadi objek baru, tanpa perlu upsert.
+  const path = `${id}/${crypto.randomUUID()}`;
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from(PROOF_BUCKET)
+    .upload(path, file as File, {
+      contentType: (file as File).type,
+      upsert: false,
+    });
+  if (uploadError)
+    return NextResponse.json(
+      { error: "Gagal mengunggah bukti, coba lagi" },
+      { status: 500 },
+    );
 
+  // proofUrl menyimpan PATH objek Supabase (bukan URL publik — bucket
+  // private tidak punya itu), dialirkan lewat GET di bawah.
   const [updated] = await db
     .update(bookings)
-    .set({ proofUrl: blob.url })
+    .set({ proofUrl: path })
     .where(
       and(
         eq(bookings.id, id),
@@ -67,7 +79,7 @@ export async function POST(
 
   if (!updated) {
     // status keburu berubah di antara cek dan update (mis. admin reject)
-    await del(blob.url).catch(() => {});
+    await supabaseAdmin.storage.from(PROOF_BUCKET).remove([path]);
     return NextResponse.json(
       { error: "Status booking berubah, muat ulang halaman" },
       { status: 409 },
@@ -79,7 +91,7 @@ export async function POST(
 // Lihat bukti: pemilik booking atau admin. Store private, jadi gambar
 // dialirkan lewat sini — otorisasi beneran, bukan URL rahasia.
 // ponytail: streaming via function cukup utk file ≤4MB; kalau kelak
-// butuh CDN, upgrade ke presignUrl.
+// butuh CDN, upgrade ke signed URL (createSignedUrl).
 export async function GET(
   _req: Request,
   ctx: RouteContext<"/api/bookings/[id]/proof">,
@@ -99,16 +111,18 @@ export async function GET(
       { status: 404 },
     );
 
-  const blob = await get(b.proofUrl, { access: "private" });
-  if (!blob || blob.statusCode !== 200)
+  const { data, error } = await supabaseAdmin.storage
+    .from(PROOF_BUCKET)
+    .download(b.proofUrl);
+  if (error || !data)
     return NextResponse.json(
       { error: "Bukti tidak ditemukan" },
       { status: 404 },
     );
 
-  return new Response(blob.stream, {
+  return new Response(data, {
     headers: {
-      "Content-Type": blob.blob.contentType ?? "application/octet-stream",
+      "Content-Type": data.type || "application/octet-stream",
       "Cache-Control": "private, max-age=60",
     },
   });

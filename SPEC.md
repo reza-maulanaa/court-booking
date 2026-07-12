@@ -90,7 +90,8 @@ Validasi input semua endpoint dengan Zod. Proteksi route via middleware
 ## 6. Definisi selesai (MVP)
 
 - Semua flow §2 jalan end-to-end di Vercel + Neon (upload bukti butuh
-  Vercel Blob store + env `BLOB_READ_WRITE_TOKEN`).
+  bucket Supabase Storage `bukti-transfer` + env `SUPABASE_SERVICE_ROLE_KEY`,
+  lihat ARCHITECTURE.md §9).
 - Double-booking terbukti tidak mungkin: test Vitest yang insert dua booking
   overlap secara paralel — satu sukses, satu dapat error ramah.
 - Transisi status di luar tabel valid ditolak.

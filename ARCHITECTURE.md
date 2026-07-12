@@ -252,33 +252,46 @@ dipanggil di jalur availability, buat booking, list booking, list admin.
   dipakai di transaksi yang sama dengan pembuatannya → dua file migration
   (0002 enum+kolom, 0003 constraint).
 
-### Penyimpanan bukti (Vercel Blob)
+### Penyimpanan bukti (Supabase Storage — revisi 2026-07-12, menggantikan Vercel Blob)
 
 File tidak bisa ke filesystem (serverless, hilang) atau ke Neon (DB
-gendut). **Vercel Blob** dipilih karena nol akun baru — token nempel di
-project Vercel yang sama. DB hanya menyimpan URL.
+gendut). Awalnya **Vercel Blob** (nol akun baru, token nempel di project
+Vercel yang sama); dipindah ke **Supabase Storage** atas keputusan user —
+Supabase dipakai **hanya untuk storage, tidak lebih** (bukan Supabase
+Auth — sesi login tetap JWT sendiri, `lib/auth.ts`). DB hanya menyimpan
+path objek, bukan URL (bucket private tidak punya URL publik).
 
+- Client di `lib/supabase.ts` pakai **service role key** (bypass RLS),
+  dipanggil cuma di route handler. Alasan bukan anon key + RLS: RLS
+  Supabase Storage lazimnya keyed ke `auth.uid()` dari Supabase Auth —
+  app ini tidak pakai itu, jadi RLS berbasis auth Supabase tidak
+  relevan; otorisasi tetap 100% di kode route (cek pemilik/admin dari
+  session JWT) sebelum panggil Supabase, sama seperti pola Blob lama.
+- Bucket **`bukti-transfer`**, dibuat manual di dashboard Supabase,
+  **private** (bukan public) — dibuat manual sekali, tidak lewat migrasi
+  Drizzle (di luar jangkauannya, sama seperti EXCLUDE constraint §4).
 - Batas **4MB** + wajib `image/*`, divalidasi **di server**
-  (`proofFileError`, `lib/validator.ts`) — batas Vercel ~4.5MB/request,
-  jadi limit aplikasi harus di bawahnya; UI menyarankan screenshot.
-  Upgrade path kalau kurang: client upload `@vercel/blob/client`.
-- Store **private** (revisi saat deploy: semula rencana public +
-  URL acak): bukti transfer = data finansial, jadi akses lewat
-  `GET /api/bookings/[id]/proof` yang mengecek pemilik/admin lalu
-  meng-alirkan gambar (`get()` SDK) — otorisasi beneran, bukan URL
-  rahasia. Streaming via function cukup untuk ≤4MB; upgrade path kalau
-  butuh CDN: `presignUrl`.
-- `addRandomSuffix: true` dipertahankan — re-upload jadi path baru
-  tanpa perlu `allowOverwrite`.
+  (`proofFileError`, `lib/validator.ts`) — asalnya dari batas body
+  request Vercel serverless function (~4.5MB), yang tetap berlaku
+  walau storage-nya bukan Vercel lagi (file tetap lewat function
+  sebelum diteruskan ke Supabase); UI menyarankan screenshot.
+- Path objek `${bookingId}/${randomUUID()}` — pengganti
+  `addRandomSuffix` Vercel Blob: re-upload otomatis jadi objek baru,
+  tanpa perlu `upsert`.
+- Akses lewat `GET /api/bookings/[id]/proof` yang mengecek pemilik/admin
+  lalu meng-alirkan gambar (`storage.download()`) — otorisasi beneran,
+  bukan URL rahasia. Streaming via function cukup untuk ≤4MB; upgrade
+  path kalau butuh CDN: `createSignedUrl`.
 - Re-upload saat masih `pending` diizinkan (salah kirim gambar tidak
-  mematikan booking); blob lama dibiarkan yatim — volumenya kecil.
+  mematikan booking); objek lama dibiarkan yatim — volumenya kecil.
 - Urutan di route proof: validasi → sweep expired → cek kepemilikan+status
-  → upload blob → UPDATE berkondisi status. Kalau UPDATE 0 baris (status
-  keburu berubah), blob dihapus lagi — tidak ada bukti nyangkut di booking
-  yang sudah ditolak.
+  → upload objek → UPDATE berkondisi status. Kalau UPDATE 0 baris (status
+  keburu berubah), objek dihapus lagi — tidak ada bukti nyangkut di
+  booking yang sudah ditolak.
 
-Env: `BLOB_READ_WRITE_TOKEN` (dibuat otomatis saat create Blob store di
-dashboard Vercel). Rekening tujuan: konstanta `TRANSFER_INFO`
+Env: `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (Project
+Settings > API di dashboard Supabase — service role key SECRET, jangan
+dipakai di client). Rekening tujuan: konstanta `TRANSFER_INFO`
 (`lib/constants.ts`) — pindah ke DB kalau kelak admin perlu ganti via UI.
 
 ## 10. Testing (Vitest)
