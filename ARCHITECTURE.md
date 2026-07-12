@@ -415,3 +415,24 @@ pelanggan itu.
   membuka form inline (bukan modal/dialog — satu form sederhana, tidak
   butuh komponen baru). Baris tabel booking walk-in ditandai badge
   "Cash" di kolom Pemesan.
+
+### Notifikasi manual admin via WhatsApp (revisi 2026-07-12)
+
+Bukan API gateway (Fonnte/Twilio dll) — cukup deep link `wa.me`, jadi
+tidak ada dependency baru & tidak ada biaya per-pesan. Konsekuensinya:
+ini **fire-and-forget, aksi manual customer** (klik tombol → buka WA →
+customer sendiri yang kirim), bukan notifikasi otomatis push ke admin.
+Tidak ada state "sudah dinotif" yang disimpan — murni UI convenience.
+
+- `ADMIN_WA_PHONE` (`lib/constants.ts`) — hardcoded, sama nomor dengan
+  kontak WA publik di section Lokasi (satu admin, satu nomor).
+- `buildAdminWaLink()` (`lib/wa.ts`) — pure client function, base URL
+  dari `window.location.origin` (bukan env var baru — app ini tidak
+  punya `NEXT_PUBLIC_SITE_URL`, dan `origin` otomatis benar di
+  dev/preview/prod). Link tujuan `/admin` (list dashboard) — tidak ada
+  halaman detail per-booking, jadi pesan cukup sebut ringkasan
+  (nama/lapangan/tanggal/jam) yang bisa dicocokkan admin di tabel.
+- Tombol "Konfirmasi ke Admin via WhatsApp" muncul di `booking-section.tsx`
+  step 4, tepat setelah bukti pembayaran terkirim (`proofDone`) — bukan
+  sebelum upload, dan bukan di jalur `/fields/[id]` (`booking-form.tsx`)
+  yang langsung redirect keluar tanpa step konfirmasi inline.

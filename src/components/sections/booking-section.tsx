@@ -6,11 +6,13 @@ import { toast } from "sonner";
 import { SectionHeading } from "./section-heading";
 import { fmtRp } from "@/lib/format";
 import {
+  ADMIN_WA_PHONE,
   MAX_PROOF_MB,
   PROOF_DEADLINE_MIN,
   TRANSFER_INFO,
   todayWIB,
 } from "@/lib/constants";
+import { buildAdminWaLink } from "@/lib/wa";
 
 type Slot = { hour: number; available: boolean };
 
@@ -748,13 +750,28 @@ export function BookingSection({
                 {done.summary}
               </div>
               {proofDone && (
-                <p className="mx-auto mt-2 mb-[8px] max-w-md text-sm text-tf-muted">
-                  Bukti sudah terkirim. Admin akan mencocokkan dengan mutasi
-                  rekening — kode booking &amp; konfirmasi final muncul di
-                  halaman <strong className="text-tf-ink">Booking Saya</strong>{" "}
-                  begitu disetujui. Kalau ditolak, booking otomatis batal dan
-                  slotnya lepas.
-                </p>
+                <>
+                  <p className="mx-auto mt-2 mb-[8px] max-w-md text-sm text-tf-muted">
+                    Bukti sudah terkirim. Admin akan mencocokkan dengan mutasi
+                    rekening — kode booking &amp; konfirmasi final muncul di
+                    halaman <strong className="text-tf-ink">Booking Saya</strong>{" "}
+                    begitu disetujui. Kalau ditolak, booking otomatis batal dan
+                    slotnya lepas.
+                  </p>
+                  <a
+                    href={buildAdminWaLink({
+                      adminPhone: ADMIN_WA_PHONE,
+                      customerName: name,
+                      summary: done.summary,
+                      origin: window.location.origin,
+                    })}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block cursor-pointer rounded-[10px] bg-[#25D366] px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-95 active:translate-y-0 active:scale-95"
+                  >
+                    Konfirmasi ke Admin via WhatsApp
+                  </a>
+                </>
               )}
             </div>
 

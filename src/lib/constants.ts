@@ -18,6 +18,8 @@ export const TRANSFER_INFO = {
   norek: "901397238897",
   atasNama: "Reza Maulana",
 };
+// ponytail: hardcoded — pindah ke DB kalau admin butuh ganti via UI.
+export const ADMIN_WA_PHONE = "087811165612";
 
 export function todayWIB(): string {
   return new Intl.DateTimeFormat("en-CA", {
