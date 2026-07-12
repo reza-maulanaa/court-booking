@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db, expireStaleBookings } from "@/db";
 import { bookings } from "@/db/schema";
 import { getSession } from "@/lib/auth";
@@ -12,9 +12,6 @@ export async function POST(
   ctx: RouteContext<"/api/bookings/[id]/proof">,
 ) {
   const session = await getSession();
-  if (!session)
-    return NextResponse.json({ error: "Silakan login dulu" }, { status: 401 });
-
   const { id } = await ctx.params;
 
   const form = await req.formData().catch(() => null);
@@ -26,11 +23,11 @@ export async function POST(
   // deterministik di cek status bawah — bukan tergantung sweep lain.
   await expireStaleBookings();
 
-  // Cek dulu sebelum upload, biar file tidak terbuang kalau bookingnya invalid.
-  const b = await db.query.bookings.findFirst({
-    where: and(eq(bookings.id, id), eq(bookings.userId, session.sub)),
-  });
-  if (!b)
+  // Cek dulu sebelum upload, biar file tidak terbuang kalau bookingnya
+  // invalid. Pemilik = sesi cocok ATAU booking guest (userId null) — ID-nya
+  // sendiri jadi bukti kepemilikan buat guest checkout tanpa akun.
+  const b = await db.query.bookings.findFirst({ where: eq(bookings.id, id) });
+  if (!b || (b.userId !== null && b.userId !== session?.sub))
     return NextResponse.json(
       { error: "Booking tidak ditemukan" },
       { status: 404 },
@@ -79,7 +76,7 @@ export async function POST(
     .where(
       and(
         eq(bookings.id, id),
-        eq(bookings.userId, session.sub),
+        b.userId === null ? isNull(bookings.userId) : eq(bookings.userId, b.userId),
         eq(bookings.status, "pending"),
       ),
     )
@@ -105,15 +102,16 @@ export async function GET(
   ctx: RouteContext<"/api/bookings/[id]/proof">,
 ) {
   const session = await getSession();
-  if (!session)
-    return NextResponse.json({ error: "Silakan login dulu" }, { status: 401 });
-
   const { id } = await ctx.params;
   const b = await db.query.bookings.findFirst({
     where: eq(bookings.id, id),
   });
-  // bukan pemilik/admin dijawab 404 (bukan 403) biar tidak bocor — pola 3e
-  if (!b?.proofUrl || (b.userId !== session.sub && session.role !== "admin"))
+  // bukan pemilik/admin dijawab 404 (bukan 403) biar tidak bocor — pola 3e.
+  // userId null (booking guest) = ID-nya sendiri jadi bukti kepemilikan.
+  if (
+    !b?.proofUrl ||
+    (b.userId !== null && b.userId !== session?.sub && session?.role !== "admin")
+  )
     return NextResponse.json(
       { error: "Bukti tidak ditemukan" },
       { status: 404 },

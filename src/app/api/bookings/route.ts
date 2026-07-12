@@ -49,14 +49,19 @@ export async function POST(req: Request) {
   // supaya slot yang tidak jadi dibayar bisa dibooking user lain.
   await expireStaleBookings();
 
-  // Anti-abuse: cegah satu user mengunci banyak slot sekaligus tanpa pernah
-  // bayar (mis. booking semua jam kosong lalu dibiarkan). Booking yang
-  // sudah ada buktinya tidak dihitung — itu sudah niat bayar, tinggal
-  // nunggu admin. Dicek per-request (bukan constraint DB) karena ini aturan
-  // "seberapa banyak", bukan "boleh/tidak" yang butuh atomicity ketat.
+  // Anti-abuse: cegah satu identitas mengunci banyak slot sekaligus tanpa
+  // pernah bayar. Login → per userId. Guest → per guestPhone (bisa
+  // dipalsukan, tapi tanpa akun ini satu-satunya identitas yang ada;
+  // upgrade ke rate-limit per-IP kalau abuse guest beneran kejadian).
+  // Booking yang sudah ada buktinya tidak dihitung — itu sudah niat bayar,
+  // tinggal nunggu admin. Dicek per-request (bukan constraint DB) karena
+  // ini aturan "seberapa banyak", bukan "boleh/tidak" yang butuh
+  // atomicity ketat.
   const pendingUnpaid = await db.query.bookings.findMany({
     where: and(
-      eq(bookings.userId, session.sub),
+      session
+        ? eq(bookings.userId, session.sub)
+        : and(isNull(bookings.userId), eq(bookings.guestPhone, guestPhone!)),
       eq(bookings.status, "pending"),
       isNull(bookings.proofUrl),
     ),
@@ -74,7 +79,9 @@ export async function POST(req: Request) {
     const [booking] = await db
       .insert(bookings)
       .values({
-        userId: session.sub,
+        userId: session?.sub ?? null,
+        guestName,
+        guestPhone,
         fieldId,
         bookingDate,
         startHour,
