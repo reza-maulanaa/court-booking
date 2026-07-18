@@ -19,7 +19,7 @@ export function LandingHero() {
       />
       <div className="absolute inset-0 bg-[linear-gradient(100deg,#08301df2_30%,#08301d80_70%,#0e7b4540)]" />
       <div className="relative w-full max-w-[760px] px-5 py-16 md:px-14 md:pt-[88px] md:pb-[72px]">
-        <p className="mb-5 inline-flex items-center gap-2 border border-tf-lime/40 bg-tf-lime/13 px-3.5 py-[7px] text-[11px] font-bold uppercase tracking-[2px] text-tf-lime sm:text-xs">
+        <p className="mb-5 inline-flex items-center gap-2 cleaborder border-tf-lime/40 bg-tf-lime/13 px-3.5 py-[7px] text-[11px] font-bold uppercase tracking-[2px] text-tf-lime sm:text-xs">
           <span className="size-[7px] rounded-full bg-tf-lime" />
           Buka setiap hari · 08.00–23.00
         </p>
